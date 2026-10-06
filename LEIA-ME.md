@@ -7,7 +7,7 @@ Atlas 3D de anatomia humana para estudantes de medicina, com corpos masculino e 
 1. Crie uma conta em https://github.com (gratuita).
 2. Clique em **New repository**, dê o nome `corpus` e marque **Public**. Clique em **Create repository**.
 3. Na página do repositório, clique em **uploading an existing file**.
-4. Arraste para a página **todo o conteúdo desta pasta**: os seis arquivos: `index.html`, `masculino.json`, `masculino.bin`, `feminino.json`, `feminino.bin` e este `LEIA-ME.md`. Clique em **Commit changes**.
+4. Arraste para a página **todo o conteúdo desta pasta**: todos os arquivos: `index.html`, `masculino.json`, `masculino.bin`, `feminino.json`, `feminino.bin`, `olhos-masculino.json`, `olhos-feminino.json`, `olho.jpg` e este `LEIA-ME.md`. Clique em **Commit changes**.
 5. Vá em **Settings > Pages**. Em **Branch**, escolha `main` e a pasta `/ (root)`. Clique em **Save**.
 6. Em um ou dois minutos o site fica disponível em `https://SEU-USUARIO.github.io/corpus/`.
 
@@ -28,6 +28,7 @@ Depois acesse http://localhost:8000 no navegador.
 
 ## Créditos e licenças
 
+- Corpos externos e olhos: gerados com o MakeHuman (makehumancommunity.org), licença CC0.
 - Modelo masculino: BodyParts3D, © The Database Center for Life Science, CC BY 4.0. Malhas preparadas pelo projeto Human Atlas.
 - Modelo feminino: Human Reference Atlas (HuBMAP), K. Browne e H. Schlehlein, baseado no Visible Human Female (U.S. National Library of Medicine), CC BY 4.0.
 - Conteúdo educacional baseado em Moore, Netter, Guyton e Hall e no ATLS (10ª edição). Sujeito a revisão por professores e cirurgiões.
