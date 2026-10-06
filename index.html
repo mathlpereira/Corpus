@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Corpus · Atlas anatômico</title>
+<meta name="description" content="Atlas anatômico 3D em camadas para estudantes de medicina, com casos clínicos interativos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light dark;
+  --bg:#e3e6ee; --bg2:#f9fafc; --ink:#1b1f3d; --ink2:#3a3f63; --muted:#5d6384; --line:rgba(27,31,61,.12); --line2:rgba(27,31,61,.2);
+  --panel:rgba(251,252,254,.82); --raise:rgba(255,255,255,.75); --hi:rgba(255,255,255,.9);
+  --accent:#a8365a; --accent-ink:#fff; --accent-soft:rgba(168,54,90,.1); --shadow:0 24px 60px -30px rgba(27,31,61,.5), 0 2px 6px -2px rgba(27,31,61,.08);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c0f22; --bg2:#1c2147; --ink:#efe9dd; --ink2:#cfc9be; --muted:#9a9cba; --line:rgba(239,233,221,.1); --line2:rgba(239,233,221,.18);
+  --panel:rgba(17,20,42,.8); --raise:rgba(255,255,255,.05); --hi:rgba(255,255,255,.07);
+  --accent:#f095ad; --accent-ink:#2a0d18; --accent-soft:rgba(240,149,173,.13); --shadow:0 24px 60px -30px rgba(0,0,0,.85), 0 2px 6px -2px rgba(0,0,0,.4);}}
+:root[data-theme="dark"]{--bg:#0c0f22; --bg2:#1c2147; --ink:#efe9dd; --ink2:#cfc9be; --muted:#9a9cba; --line:rgba(239,233,221,.1); --line2:rgba(239,233,221,.18);
+  --panel:rgba(17,20,42,.8); --raise:rgba(255,255,255,.05); --hi:rgba(255,255,255,.07);
+  --accent:#f095ad; --accent-ink:#2a0d18; --accent-soft:rgba(240,149,173,.13); --shadow:0 24px 60px -30px rgba(0,0,0,.85), 0 2px 6px -2px rgba(0,0,0,.4);}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;overflow:hidden;color:var(--ink);background:radial-gradient(100% 80% at 50% 45%, var(--bg2) 0%, var(--bg) 70%);
+  font-family:'Instrument Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.lucide{width:17px;height:17px;stroke-width:1.75;flex:none}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+.panel{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow), inset 0 1px 0 var(--hi);
+  backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);z-index:4}
+.ph{display:flex;align-items:baseline;justify-content:space-between;margin:0 4px 12px}
+.ph h2{margin:0;font-size:14px;font-weight:600}
+.ph span{font-size:12px;color:var(--muted)}
+
+/* topo */
+.top{position:fixed;left:20px;right:20px;top:calc(16px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:14px;z-index:6;pointer-events:none}
+.top>*{pointer-events:auto}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto}
+.mark{width:34px;height:34px;border-radius:11px;background:var(--ink);display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.15)}
+.mark svg{width:20px;height:20px}
+.brand b{display:block;font-family:'Spectral',Georgia,serif;font-weight:500;font-size:22px;line-height:1}
+.brand span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.seg{display:flex;padding:4px;gap:2px;border-radius:13px;background:var(--panel);border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--hi);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.seg button{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:9px;font-size:13.5px;color:var(--muted);transition:background .2s,color .2s}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg2);box-shadow:0 4px 12px -6px rgba(0,0,0,.5)}
+.search{position:relative;width:min(340px,32vw)}
+.search .lucide{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search input{width:100%;padding:10px 40px 10px 38px;border-radius:13px;border:1px solid var(--line);background:var(--panel);box-shadow:inset 0 1px 0 var(--hi);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:14px}
+.search input::placeholder{color:var(--muted)}
+.search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:500 11px/1 'Instrument Sans',sans-serif;color:var(--muted);border:1px solid var(--line2);border-radius:6px;padding:3px 6px}
+#results{position:absolute;top:calc(100% + 8px);left:0;right:0;display:none;padding:6px;max-height:52vh;overflow:auto}
+#results.open{display:block}
+#results button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px 10px;border-radius:10px;font-size:14px}
+#results button i{width:9px;height:9px;border-radius:50%;flex:none}
+#results button small{display:block;color:var(--muted);font-size:12px}
+#results button:hover,#results button.kb{background:var(--accent-soft)}
+#results .none{padding:10px;color:var(--muted);font-size:13.5px}
+
+/* camadas */
+#rail{left:20px;top:calc(82px + env(safe-area-inset-top,0px));width:268px;padding:16px 12px 12px;max-height:calc(100% - 180px);overflow:auto}
+.levels{display:flex;flex-direction:column;gap:2px;position:relative}
+.lv{display:flex;align-items:center;gap:12px;text-align:left;padding:6px 8px 6px 6px;border-radius:13px;position:relative;transition:background .2s}
+.lv:hover{background:var(--accent-soft)}
+.lv .tile{width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;border:1px solid var(--line);background:var(--raise);transition:transform .25s, box-shadow .25s, opacity .25s}
+.lv .tile svg{width:30px;height:30px}
+.lv b{display:block;font-weight:500;font-size:14px;line-height:1.25}
+.lv span{display:block;font-size:12px;color:var(--muted)}
+.lv[aria-current="true"]{background:var(--accent-soft)}
+.lv[aria-current="true"] .tile{box-shadow:0 0 0 2px var(--accent), 0 8px 18px -10px var(--accent);transform:scale(1.04)}
+.lv[aria-current="true"] b{color:var(--ink)}
+.lv.gone .tile{opacity:.38}
+.lv.gone b{color:var(--muted)}
+.lv.gone span::after{content:" (removida)"}
+.lv::after{content:"";position:absolute;left:26px;bottom:-3px;width:1px;height:6px;background:var(--line2)}
+.lv:last-child::after{display:none}
+.fnote{margin:8px 6px 0;padding:9px 11px;border-radius:11px;background:var(--accent-soft);font-size:12.5px;color:var(--ink2);display:none}
+.sys{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.tg{display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;border-radius:10px;font-size:13.5px}
+.tg:hover{background:var(--accent-soft)}
+.tg i{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 3px var(--raise)}
+.tg .nm{flex:1;text-align:left}
+.tg .sw{width:32px;height:19px;border-radius:999px;background:var(--line2);position:relative;flex:none;transition:background .2s}
+.tg .sw::after{content:"";position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.tg[aria-checked="true"] .sw{background:var(--accent)}
+.tg[aria-checked="true"] .sw::after{transform:translateX(13px)}
+
+/* ficha */
+#info{right:20px;top:calc(82px + env(safe-area-inset-top,0px));width:372px;max-height:calc(100% - 180px);overflow:auto;padding:20px 22px 18px}
+.crumb{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.crumb i{width:10px;height:10px;border-radius:3px}
+#info h2{font-family:'Spectral',Georgia,serif;font-weight:500;font-size:29px;line-height:1.1;margin:8px 0 4px;letter-spacing:-.005em}
+#info .lat{font-family:'Spectral',Georgia,serif;font-style:italic;color:var(--muted);font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);background:var(--raise)}
+button.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip i{width:7px;height:7px;border-radius:50%}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:16px}
+.acts button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 6px 9px;border-radius:12px;border:1px solid var(--line);background:var(--raise);font-size:12.5px;color:var(--ink2);transition:border-color .2s, transform .15s}
+.acts button:hover{border-color:var(--accent);color:var(--ink)}
+.acts button:active{transform:scale(.97)}
+.acts button[aria-pressed="true"]{background:var(--ink);color:var(--bg2);border-color:var(--ink)}
+.tabs{display:flex;gap:18px;border-bottom:1px solid var(--line);margin-top:18px}
+.tabs button{padding:8px 0;font-size:13.5px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--accent);font-weight:500}
+.pane{padding-top:12px}
+.pane p{margin:0 0 10px;font-size:14.5px;line-height:1.65}
+.pane .clin{padding:12px 14px;background:var(--accent-soft);border-radius:12px;font-size:14.5px;line-height:1.65}
+.sub{font-size:13px;font-weight:600;margin:16px 0 8px}
+.note{font-size:12.5px;color:var(--muted);line-height:1.55}
+#infoClose{display:none;position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:10px;place-items:center;color:var(--muted)}
+.welcome .steps{display:grid;gap:10px;margin-top:14px}
+.welcome .st{display:flex;gap:12px;align-items:flex-start}
+.welcome .st b{flex:none;width:26px;height:26px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:12.5px}
+.welcome .st p{margin:2px 0 0;font-size:14px;line-height:1.5}
+
+/* dock */
+#dock{left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:4px;padding:6px;border-radius:16px}
+#dock .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.ib{position:relative;display:grid;place-items:center;width:38px;height:38px;border-radius:11px;color:var(--ink2);transition:background .15s,color .15s}
+.ib:hover{background:var(--accent-soft);color:var(--ink)}
+.ib[aria-pressed="true"]{background:var(--ink);color:var(--bg2)}
+.ib .badge{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:10px;font-weight:600;display:grid;place-items:center}
+.vbtn{padding:8px 11px;border-radius:10px;font-size:13px;color:var(--ink2)}
+.vbtn:hover{background:var(--accent-soft);color:var(--ink)}
+[data-tip]:hover::before{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:12px;padding:5px 9px;border-radius:8px;background:var(--ink);color:var(--bg2);pointer-events:none}
+
+#credit{position:fixed;right:22px;bottom:calc(20px + env(safe-area-inset-bottom,0px));font-size:11px;color:var(--muted);z-index:3;text-align:right;max-width:24vw;line-height:1.45}
+#tip{position:fixed;z-index:8;pointer-events:none;padding:8px 12px;border-radius:11px;background:var(--panel);border:1px solid var(--line);font-size:13.5px;display:none;box-shadow:var(--shadow);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);max-width:280px}
+#tip small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11.5px;margin-top:2px}
+#tip small i{width:7px;height:7px;border-radius:50%}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);opacity:0;transition:.3s;padding:9px 16px;border-radius:999px;background:var(--ink);color:var(--bg2);font-size:13.5px;z-index:9;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#help{position:fixed;inset:0;z-index:10;display:none;place-items:center;background:rgba(10,12,30,.35)}
+#help.open{display:grid}
+#help .panel{position:relative;width:min(420px,92vw);padding:22px}
+#help h2{font-family:'Spectral',Georgia,serif;font-weight:500;font-size:24px;margin:0 0 12px}
+#help dl{display:grid;grid-template-columns:auto 1fr;gap:9px 16px;margin:0;font-size:14px}
+#help dt kbd{font:500 12px/1 'Instrument Sans',sans-serif;border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;padding:4px 7px;white-space:nowrap}
+#help dd{margin:0;color:var(--ink2)}
+#help .ib{position:absolute;right:12px;top:12px}
+#boot{position:fixed;inset:0;display:grid;place-items:center;z-index:11;background:var(--bg);transition:opacity .9s}
+#boot.done{opacity:0;pointer-events:none}
+#boot b{display:block;font-family:'Spectral',Georgia,serif;font-weight:400;font-size:40px;text-align:center}
+#boot span{display:block;color:var(--muted);font-size:13.5px;text-align:center;margin-top:6px}
+.bar{width:220px;height:3px;border-radius:3px;background:var(--line);margin:18px auto 0;overflow:hidden}
+.bar div{height:100%;width:0;background:var(--accent);transition:width .3s}
+
+@media (max-width: 900px){
+  .brand span,#credit,.search kbd{display:none}
+  .top{left:12px;right:12px;gap:8px;flex-wrap:wrap}
+  .search{order:3;width:100%}
+  .seg button{padding:7px 10px}
+  #rail{left:10px;right:10px;width:auto;top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:8px;max-height:none;overflow:visible}
+  #rail .ph,#rail .sys .ph,.lv span,.lv::after{display:none}
+  .levels{flex-direction:row;overflow-x:auto;gap:4px}
+  .lv{flex-direction:column;gap:4px;padding:6px 4px;min-width:66px}
+  .lv b{font-size:11px;text-align:center;white-space:nowrap}
+  .lv .tile{width:36px;height:36px}
+  .sys{display:flex;gap:4px;border-top:0;margin-top:2px;padding-top:0;overflow-x:auto}
+  .tg{width:auto;padding:5px 8px;font-size:12px;white-space:nowrap}
+  .fnote{font-size:11.5px;margin:6px 2px 0}
+  #info{left:10px;right:10px;width:auto;top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px));max-height:40vh;padding:18px}
+  #info.closed{display:none}
+  #infoClose{display:grid}
+  #info h2{font-size:24px}
+  #dock{display:none}
+}
+/* casos */
+#caseBtn{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:13px;background:var(--accent);color:var(--accent-ink);font-size:13.5px;font-weight:500;box-shadow:0 8px 20px -10px var(--accent)}
+#caseBtn:hover{filter:brightness(1.05)}
+#cases{position:fixed;inset:0;z-index:10;display:none;place-items:center;background:rgba(10,12,30,.4)}
+#cases.open{display:grid}
+#cases .panel{position:relative;width:min(560px,94vw);padding:24px}
+#cases h2{font-family:'Spectral',Georgia,serif;font-weight:500;font-size:26px;margin:0 0 4px}
+#cases .lead{color:var(--muted);font-size:14px;margin:0 0 16px}
+.ccard{display:flex;gap:14px;align-items:flex-start;width:100%;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--raise);margin-top:8px;transition:border-color .2s,transform .15s}
+.ccard:hover:not([disabled]){border-color:var(--accent);transform:translateY(-1px)}
+.ccard[disabled]{opacity:.55;cursor:default}
+.ccard .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:none}
+.ccard b{display:block;font-size:15px;font-weight:600}
+.ccard span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.ccard em{font-style:normal;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--muted);margin-left:auto;align-self:center;white-space:nowrap}
+#monitor{position:fixed;left:20px;top:calc(82px + env(safe-area-inset-top,0px));width:288px;z-index:4;display:none;border-radius:18px;padding:14px 16px 12px;background:#080c1a;color:#dfe8ff;box-shadow:0 24px 50px -24px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+#monitor .mh{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#8d97b8;margin-bottom:8px}
+#monitor .live{display:flex;align-items:center;gap:6px}
+#monitor .live i{width:7px;height:7px;border-radius:50%;background:#ff5d7a;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+#ecg{display:block;width:100%;height:58px;border-radius:8px;background:linear-gradient(#0d1428,#0a1022)}
+.vits{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:10px}
+.vit small{display:block;font-size:11px;color:#8d97b8}
+.vit b{font-size:26px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.1;letter-spacing:-.01em}
+.vit b sub{font-size:11px;font-weight:400;color:#8d97b8;vertical-align:baseline;margin-left:3px}
+.v-hr b{color:#5ef2a0}.v-sat b{color:#4cc9f0}.v-pa b{color:#ff9fb4}.v-fr b{color:#ffd166}
+.vit.alarm b{animation:blink 1s infinite}
+#case{right:20px;top:calc(82px + env(safe-area-inset-top,0px));width:396px;max-height:calc(100% - 110px);overflow:auto;padding:20px 22px;display:none}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.chead .crumb{font-size:12.5px}
+.cexit{font-size:12.5px;color:var(--muted);padding:6px 10px;border-radius:9px;border:1px solid var(--line)}
+.cexit:hover{color:var(--ink);border-color:var(--accent)}
+.cprog{display:flex;gap:4px;margin:14px 0 4px}
+.cprog i{flex:1;height:4px;border-radius:4px;background:var(--line)}
+.cprog i.done{background:var(--accent)}
+.cprog i.now{background:var(--ink)}
+.ctitle{font-family:'Spectral',Georgia,serif;font-weight:500;font-size:24px;line-height:1.15;margin:12px 0 6px}
+.cstep{font-size:12.5px;color:var(--muted)}
+.ctext{font-size:14.5px;line-height:1.62;margin:8px 0}
+.exam{margin:10px 0;padding:12px 14px;border-radius:12px;background:var(--raise);border:1px solid var(--line)}
+.exam b{display:block;font-size:12.5px;margin-bottom:6px;color:var(--muted);font-weight:500}
+.exam li{font-size:14px;line-height:1.55;margin-left:-6px}
+.exam ul{margin:0;padding-left:18px}
+.opts{display:grid;gap:7px;margin-top:12px}
+.opt{display:flex;gap:11px;align-items:flex-start;text-align:left;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:var(--raise);font-size:14px;line-height:1.45;transition:border-color .15s}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt i{flex:none;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line2);margin-top:2px}
+.opt.sel{border-color:var(--ink)}.opt.sel i{border:5px solid var(--ink)}
+.opt.ok{border-color:#2f9e6b;background:rgba(47,158,107,.1)}.opt.ok i{border:5px solid #2f9e6b}
+.opt.bad{border-color:#d0475f;background:rgba(208,71,95,.09)}.opt.bad i{border:5px solid #d0475f}
+.opt[disabled]{cursor:default}
+.fb{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:14px;line-height:1.6}
+.fb.good{background:rgba(47,158,107,.12)}.fb.mid{background:rgba(232,170,60,.14)}.fb.badfb{background:rgba(208,71,95,.1)}
+.fb strong{display:block;margin-bottom:3px}
+.cbtns{display:flex;gap:8px;margin-top:16px}
+.cbtn{flex:1;padding:11px 14px;border-radius:12px;font-weight:500;font-size:14px;border:1px solid var(--line);background:var(--raise);display:flex;align-items:center;justify-content:center;gap:8px}
+.cbtn.pri{background:var(--ink);color:var(--bg2);border-color:var(--ink)}
+.cbtn[disabled]{opacity:.4;cursor:default}
+.meas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.meas div{padding:10px;border-radius:11px;background:var(--raise);border:1px solid var(--line);text-align:center}
+.meas small{display:block;font-size:11.5px;color:var(--muted)}
+.meas b{font-size:18px;font-variant-numeric:tabular-nums}
+.meas .y b{color:#2f9e6b}.meas .n b{color:#d0475f}.meas .m b{color:#c98a1a}
+.seq{display:grid;gap:5px;margin:12px 0}
+.seq div{display:flex;gap:10px;align-items:center;padding:8px 11px;border-radius:10px;background:rgba(47,158,107,.1);font-size:13.5px}
+.seq div b{width:22px;height:22px;border-radius:7px;background:#2f9e6b;color:#fff;display:grid;place-items:center;font-size:12px;flex:none}
+.pool{display:grid;gap:6px}
+.pool button{text-align:left;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--raise);font-size:13.5px;line-height:1.4}
+.pool button:hover{border-color:var(--accent)}
+.pool button.shake{animation:shake .35s;border-color:#d0475f;background:rgba(208,71,95,.1)}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.score{display:flex;align-items:baseline;gap:6px;margin:10px 0 2px}
+.score b{font-family:'Spectral',Georgia,serif;font-size:56px;font-weight:500;line-height:1}
+.score span{color:var(--muted)}
+.rows{display:grid;gap:8px;margin-top:14px}
+.rowx{font-size:13.5px}
+.rowx div{display:flex;justify-content:space-between}
+.rowx .bar2{height:5px;border-radius:5px;background:var(--line);margin-top:4px;overflow:hidden}
+.rowx .bar2 i{display:block;height:100%;background:var(--accent);border-radius:5px}
+#caseHint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:5;display:none;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:var(--ink);color:var(--bg2);font-size:13.5px;box-shadow:var(--shadow)}
+#caseHint button{padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12.5px}
+body.case #rail,body.case #info,body.case #dock,body.case .seg,body.case .search,body.case #caseBtn{display:none}
+body.case #monitor,body.case #case{display:block}
+@media (max-width:900px){
+  #caseBtn span{display:none}
+  #monitor{left:10px;right:10px;width:auto;top:calc(64px + env(safe-area-inset-top,0px));padding:10px 12px}
+  #ecg{height:40px}.vits{grid-template-columns:repeat(4,1fr)}.vit b{font-size:19px}
+  #case{left:10px;right:10px;width:auto;top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:46vh}
+  #caseHint{bottom:calc(48vh + 18px)}
+}
+
+.anim{margin:12px 0 4px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--raise)}
+.anim svg{display:block;width:100%;height:auto;background:var(--bg2)}
+.acap{margin:0;padding:10px 12px 4px;font-size:13.5px;line-height:1.5;min-height:46px}
+.actl{display:flex;align-items:center;gap:8px;padding:4px 8px 8px}
+.actl button{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--ink2)}
+.actl button:hover{background:var(--accent-soft)}
+.atl{flex:1;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.atl i{display:block;height:100%;width:0;background:var(--accent)}
+.snd{display:flex;gap:4px}
+.snd button{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:var(--muted);border:1px solid var(--line)}
+.snd button[aria-pressed="true"]{color:var(--ink);border-color:var(--accent);background:var(--accent-soft)}
+
+/* ===== layout v3 ===== */
+:root{--stage1:#f1f2f6;--stage2:#c3c8d4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--stage1:#262b52;--stage2:#090b1a}}
+:root[data-theme="dark"]{--stage1:#262b52;--stage2:#090b1a}
+body{background:radial-gradient(90% 75% at 50% 42%, var(--stage1) 0%, var(--stage2) 78%)}
+.top{justify-content:space-between}
+.brand{margin-right:0;min-width:220px}
+.seg{position:absolute;left:50%;transform:translateX(-50%)}
+.seg button svg{width:15px;height:15px}
+.tact{display:flex;gap:8px;align-items:center}
+.pill{display:flex;align-items:center;gap:9px;padding:9px 12px 9px 13px;border-radius:13px;border:1px solid var(--line);background:var(--panel);box-shadow:inset 0 1px 0 var(--hi);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:13.5px;color:var(--muted)}
+.pill:hover{color:var(--ink);border-color:var(--line2)}
+.pill kbd{font:500 11px/1 'Instrument Sans',sans-serif;border:1px solid var(--line2);border-radius:6px;padding:3px 6px;margin-left:18px}
+#palette{position:fixed;inset:0;z-index:12;display:none;background:rgba(8,10,24,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#palette.open{display:block}
+#palette .pal{position:absolute;left:50%;top:14vh;transform:translateX(-50%);width:min(600px,92vw);padding:8px;border-radius:20px}
+.pin{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.pin input{flex:1;border:0;background:transparent;font-size:18px;outline:none;padding:6px 0}
+.pin kbd{font:500 11px/1 'Instrument Sans',sans-serif;border:1px solid var(--line2);border-radius:6px;padding:3px 6px;color:var(--muted)}
+.pin .lucide{width:20px;height:20px;color:var(--muted)}
+#palette #results{position:static;display:block;max-height:52vh;overflow:auto;padding:6px 2px 2px;border:0;box-shadow:none;background:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+#palette #results button{padding:10px 12px;border-radius:12px;font-size:15px}
+.phint{padding:8px 14px 6px;font-size:12px;color:var(--muted)}
+#rail{width:262px;transition:width .25s}
+#railTog{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+#railTog:hover{background:var(--accent-soft);color:var(--ink)}
+#rail .ph{align-items:center}
+body.rail-min #rail{width:76px;padding:12px 10px}
+body.rail-min #rail .ph h2,body.rail-min #lvCap,body.rail-min .lv div,body.rail-min .sys,body.rail-min .fnote,body.rail-min .lv::after{display:none}
+body.rail-min #rail .ph{justify-content:center;margin:0 0 8px}
+body.rail-min .lv{padding:5px;justify-content:center}
+#info{transition:opacity .2s, transform .25s}
+#info.closed{opacity:0;transform:translateX(24px);pointer-events:none}
+#infoClose{display:grid;position:absolute;right:12px;top:12px}
+#info h2{padding-right:34px}
+#hello{position:fixed;left:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:330px;padding:16px 18px;z-index:4;display:none}
+#hello.show{display:block}
+#hello b{display:block;font-family:'Spectral',Georgia,serif;font-weight:500;font-size:19px;margin-bottom:6px}
+#hello p{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink2)}
+#hello button{margin-top:12px;font-size:13px;padding:7px 12px;border-radius:10px;background:var(--ink);color:var(--bg2)}
+#credit{display:none}
+#credBtn{position:fixed;right:22px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:3;font-size:12px;color:var(--muted);padding:6px 10px;border-radius:9px}
+#credBtn:hover{color:var(--ink);background:var(--accent-soft)}
+#about{position:fixed;inset:0;z-index:12;display:none;place-items:center;background:rgba(8,10,24,.38)}
+#about.open{display:grid}
+#about .panel{position:relative;width:min(520px,92vw);padding:24px}
+#about h2{font-family:'Spectral',Georgia,serif;font-weight:500;font-size:24px;margin:0 0 12px}
+#about p{font-size:13.5px;line-height:1.6;color:var(--ink2);margin:0 0 10px}
+#dock{padding:5px;gap:2px;border-radius:15px}
+.vbtn{font-size:12.5px;padding:8px 10px}
+/* caso */
+#monitor{left:20px;right:440px;width:auto;max-width:760px;display:none;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:12px 16px}
+body.case #monitor{display:grid}
+#monitor .mh{grid-column:1/-1;margin:0}
+#ecg{height:74px}
+.vits{grid-template-columns:repeat(4,auto);gap:4px 18px;margin:0}
+.vit b{font-size:30px}
+#case{width:410px;top:calc(82px + env(safe-area-inset-top,0px))}
+.snd{align-items:center}
+.snd input{width:70px;accent-color:var(--accent)}
+.cbtn.rev{flex:none;margin-top:12px;width:100%}
+#theater{position:fixed;inset:0;z-index:12;display:none;place-items:center;background:rgba(6,8,20,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#theater.open{display:grid}
+#theater .th{position:relative;width:min(900px,94vw);padding:18px 20px 20px;border-radius:22px}
+.thhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.thhead span{font-family:'Spectral',Georgia,serif;font-size:22px;font-weight:500}
+#theater .anim svg{max-height:58vh}
+#theater .acap{font-size:17px;min-height:58px;padding:14px 16px 6px}
+@media (max-width:900px){
+  .seg{position:static;transform:none}
+  .brand{min-width:0}.pill span,.pill kbd{display:none}
+  #monitor{left:10px;right:10px;grid-template-columns:1fr}
+  .vits{grid-template-columns:repeat(4,1fr)}.vit b{font-size:20px}
+  #case{width:auto}
+  #hello{left:10px;right:10px;width:auto;bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+  #credBtn{display:none}
+}
+
+@media (prefers-reduced-motion: reduce){*{transition-duration:.01s !important}}
+</style>
+</head>
+<body>
+<canvas id="scene" tabindex="0" aria-label="Corpo humano em 3D"></canvas>
+<header class="top">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.6" fill="#f095ad"/><path d="M7.5 9.5h9l-1.6 6.2H13.4V21h-2.8v-5.3H9.1z" fill="#efe9dd"/></svg></div>
+    <div><b>Corpus</b><span>Atlas anatômico em camadas</span></div>
+  </div>
+  <div class="seg" role="group" aria-label="Corpo">
+    <button type="button" data-body="m" aria-pressed="true">Masculino</button>
+    <button type="button" data-body="f" aria-pressed="false">Feminino</button>
+  </div>
+  <div class="tact">
+    <button class="pill" id="searchBtn" type="button"><i data-lucide="search"></i><span>Buscar estrutura</span><kbd>/</kbd></button>
+    <button id="caseBtn" type="button"><i data-lucide="stethoscope"></i><span>Casos clínicos</span></button>
+  </div>
+</header>
+<div id="palette" role="dialog" aria-modal="true" aria-label="Buscar estrutura"><div class="pal panel">
+  <div class="pin"><i data-lucide="search"></i><input id="q" type="search" placeholder="Buscar estrutura, por exemplo fêmur, deltoide, coronária" autocomplete="off" aria-label="Buscar estrutura"><kbd>Esc</kbd></div>
+  <div id="results" role="listbox"></div>
+  <div class="phint">Funciona em português e em inglês. Use as setas e Enter para escolher.</div>
+</div></div>
+
+<aside id="rail" class="panel" aria-label="Camadas">
+  <div class="ph"><h2>Camadas</h2><span id="lvCap"></span><button id="railTog" type="button" aria-label="Recolher painel"><i data-lucide="panel-left-close"></i></button></div>
+  <div class="levels" id="levels"></div>
+  <div class="fnote" id="fnote">Neste modelo, a musculatura disponível é a dos membros inferiores e dos olhos.</div>
+  <div class="sys">
+    <div class="ph"><h2>Sistemas</h2></div>
+    <div id="toggles"></div>
+  </div>
+</aside>
+
+<aside id="info" class="panel" aria-live="polite"><button id="infoClose" type="button" aria-label="Fechar ficha"><i data-lucide="x"></i></button><div id="infoBody"></div></aside>
+
+<nav id="dock" class="panel" aria-label="Ferramentas">
+  <button class="ib" id="bHome" type="button" data-tip="Recentralizar" aria-label="Recentralizar"><i data-lucide="house"></i></button>
+  <button class="ib" id="bSpin" type="button" data-tip="Girar automaticamente" aria-label="Girar automaticamente" aria-pressed="false"><i data-lucide="rotate-3d"></i></button>
+  <span class="sep"></span>
+  <button class="vbtn" type="button" data-view="ant">Frente</button>
+  <button class="vbtn" type="button" data-view="post">Costas</button>
+  <button class="vbtn" type="button" data-view="r">Direita</button>
+  <button class="vbtn" type="button" data-view="l">Esquerda</button>
+  <span class="sep"></span>
+  <button class="ib" id="bShow" type="button" data-tip="Mostrar estruturas ocultas" aria-label="Mostrar estruturas ocultas"><i data-lucide="eye"></i><span class="badge" id="hidCount" hidden>0</span></button>
+  <button class="ib" id="bHelp" type="button" data-tip="Atalhos" aria-label="Atalhos"><i data-lucide="keyboard"></i></button>
+</nav>
+
+<div id="cases" role="dialog" aria-modal="true" aria-label="Casos clínicos"><div class="panel">
+  <button class="ib" id="casesClose" type="button" aria-label="Fechar" style="position:absolute;right:12px;top:12px"><i data-lucide="x"></i></button>
+  <h2>Casos clínicos</h2>
+  <p class="lead">Avalie o paciente, raciocine com a anatomia e execute o procedimento. Cada decisão vale pontos.</p>
+  <button class="ccard" type="button" id="startCase1"><span class="ico"><i data-lucide="activity"></i></span><span><b>Pneumotórax hipertensivo</b><span>Trauma torácico penetrante. Diagnóstico, descompressão e drenagem de tórax.</span></span><em>Cerca de 8 min</em></button>
+  <button class="ccard" type="button" disabled><span class="ico"><i data-lucide="scissors"></i></span><span><b>Apendicite aguda</b><span>Ponto de McBurney e incisão para apendicectomia.</span></span><em>Em breve</em></button>
+  <button class="ccard" type="button" disabled><span class="ico"><i data-lucide="wind"></i></span><span><b>Via aérea cirúrgica</b><span>Cricotireoidostomia de emergência.</span></span><em>Em breve</em></button>
+</div></div>
+<div id="monitor" aria-label="Monitor do paciente">
+  <div class="mh"><span>Monitor multiparamétrico</span><span class="live"><i></i>Ao vivo</span></div>
+  <canvas id="ecg" width="512" height="116"></canvas>
+  <div class="vits">
+    <div class="vit v-hr" id="vHR"><small>Frequência cardíaca</small><b>0<sub>bpm</sub></b></div>
+    <div class="vit v-sat" id="vSAT"><small>Saturação de O₂</small><b>0<sub>%</sub></b></div>
+    <div class="vit v-pa" id="vPA"><small>Pressão arterial</small><b>0<sub>mmHg</sub></b></div>
+    <div class="vit v-fr" id="vFR"><small>Freq. respiratória</small><b>0<sub>irpm</sub></b></div>
+  </div>
+</div>
+<aside id="case" class="panel" aria-live="polite"></aside>
+<div id="caseHint"></div>
+
+<div id="credit"></div>
+<button id="credBtn" type="button">Créditos</button>
+<div id="about" role="dialog" aria-modal="true" aria-label="Créditos"><div class="panel">
+  <button class="ib" id="aboutClose" type="button" aria-label="Fechar" style="position:absolute;right:12px;top:12px"><i data-lucide="x"></i></button>
+  <h2>Créditos</h2>
+  <p>Modelo masculino: BodyParts3D, © The Database Center for Life Science, licença CC BY 4.0. Malhas preparadas pelo projeto Human Atlas e simplificadas para a web.</p>
+  <p>Modelo feminino: Human Reference Atlas (HuBMAP), K. Browne e H. Schlehlein, baseado no Visible Human Female da U.S. National Library of Medicine, licença CC BY 4.0. Ossos dos membros superiores e do crânio adaptados do BodyParts3D.</p>
+  <p>Conteúdo das fichas e dos casos: baseado em Moore, Netter, Guyton e Hall e no ATLS (10ª edição). Material educacional, sujeito a revisão por professores e cirurgiões.</p>
+</div></div>
+<div id="hello" class="panel"><b>Explore camada por camada</b><p id="helloTxt"></p><button type="button" id="helloOk">Entendi</button></div>
+<div id="theater" role="dialog" aria-modal="true" aria-label="Animação"><div class="th panel"><div class="thhead"><span id="thTitle"></span><button class="ib" id="thClose" type="button" aria-label="Fechar"><i data-lucide="x"></i></button></div><div id="thBody"></div><div class="cbtns"><button class="cbtn pri" id="thOk" type="button">Continuar o caso</button></div></div></div>
+<div id="tip"></div>
+<div id="toast"></div>
+<div id="help" role="dialog" aria-modal="true" aria-label="Atalhos"><div class="panel">
+  <button class="ib" id="helpClose" type="button" aria-label="Fechar"><i data-lucide="x"></i></button>
+  <h2>Atalhos</h2>
+  <dl>
+    <dt><kbd>Arrastar</kbd></dt><dd>Girar o corpo</dd>
+    <dt><kbd>Botão direito</kbd></dt><dd>Mover a câmera</dd>
+    <dt><kbd>Rolar</kbd></dt><dd>Aproximar e afastar</dd>
+    <dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Subir ou descer uma camada</dd>
+    <dt><kbd>/</kbd></dt><dd>Buscar estrutura</dd>
+    <dt><kbd>F</kbd></dt><dd>Aproximar da estrutura selecionada</dd>
+    <dt><kbd>I</kbd></dt><dd>Isolar a estrutura selecionada</dd>
+    <dt><kbd>H</kbd></dt><dd>Ocultar a estrutura selecionada</dd>
+    <dt><kbd>Esc</kbd></dt><dd>Sair do isolamento ou limpar a seleção</dd>
+  </dl>
+</div></div>
+<div id="boot"><div><b>Corpus</b><span id="bootMsg">Carregando o modelo anatômico…</span><div class="bar"><div id="bootBar"></div></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script>
+const FILES={m:"masculino",f:"feminino"};
+const INFO={"ventriculo_direito": {"nome": "Ventrículo direito", "latim": "Ventriculus dexter", "oque": "Forma a maior parte da face anterior (esternocostal) do coração. A parede é fina, com 3 a 5 mm, e o interior tem trabéculas cárneas, músculos papilares e a trabécula septomarginal, que leva parte do ramo direito do feixe de His.", "funcao": "Bombeia o sangue venoso para o tronco pulmonar, num circuito de baixa pressão (sistólica em torno de 25 mmHg).", "clinica": "O infarto de VD, quase sempre por oclusão proximal da coronária direita, cursa com hipotensão e pulmões limpos. Como esse ventrículo depende muito da pré-carga, nitratos devem ser evitados. Doença pulmonar crônica leva a hipertrofia do VD (cor pulmonale)."}, "ventriculo_esquerdo": {"nome": "Ventrículo esquerdo", "latim": "Ventriculus sinister", "oque": "Forma o ápice, a face pulmonar (esquerda) e a maior parte da face diafragmática. A parede é duas a três vezes mais espessa que a do VD, e o interior tem trabéculas finas e dois músculos papilares (anterolateral e posteromedial) ligados à valva mitral.", "funcao": "É a bomba do circuito sistêmico, trabalhando com pressões em torno de 120/8 mmHg.", "clinica": "O ápice gera o ictus cordis, normalmente palpável no 5º espaço intercostal esquerdo, na linha hemiclavicular. A hipertensão arterial crônica causa hipertrofia concêntrica do VE. O músculo papilar posteromedial costuma ter irrigação única, por isso é o que mais rompe no infarto inferior, causando insuficiência mitral aguda."}, "atrio_direito": {"nome": "Átrio direito", "latim": "Atrium dextrum", "oque": "Recebe o sangue venoso pelas veias cavas superior e inferior e pelo seio coronário. A parte posterior é lisa (seio das veias cavas) e a anterior tem músculos pectíneos, separadas pela crista terminal. No septo fica a fossa oval, resquício do forame oval fetal.", "funcao": "Reservatório e câmara de passagem para o ventrículo direito. Abriga o nó sinoatrial, o marca-passo natural, perto da desembocadura da veia cava superior.", "clinica": "O forame oval patente persiste em cerca de 25% dos adultos e pode permitir embolia paradoxal (um trombo venoso que chega à circulação arterial). O flutter atrial típico é um circuito de reentrada no istmo cavotricuspídeo, dentro desta câmara."}, "atrio_esquerdo": {"nome": "Átrio esquerdo", "latim": "Atrium sinistrum", "oque": "A câmara mais posterior do coração e a principal formadora da sua base. Recebe as quatro veias pulmonares. A parede é quase toda lisa; os músculos pectíneos ficam restritos à aurícula esquerda.", "funcao": "Recebe o sangue oxigenado dos pulmões e o entrega ao ventrículo esquerdo pela valva mitral. Fica imediatamente à frente do esôfago.", "clinica": "Na fibrilação atrial não valvar, a grande maioria dos trombos se forma na aurícula esquerda, com risco de AVC embólico. Um átrio esquerdo muito aumentado, como na estenose mitral, pode comprimir o esôfago (disfagia) ou o nervo laríngeo recorrente esquerdo (rouquidão, a síndrome de Ortner)."}, "aorta": {"nome": "Aorta", "latim": "Aorta ascendens, arcus aortae, aorta descendens", "oque": "Maior artéria do corpo. Nasce do VE na valva da aorta, sobe como aorta ascendente (de onde saem as coronárias), forma o arco e desce à esquerda da coluna como aorta torácica descendente.", "funcao": "Conduz o sangue para a circulação sistêmica e amortece o fluxo: suas paredes elásticas armazenam energia na sístole e a devolvem na diástole (efeito Windkessel).", "clinica": "A dissecção aórtica se apresenta como dor torácica súbita, lancinante, irradiada para o dorso. Na classificação de Stanford, o tipo A envolve a aorta ascendente e é cirúrgico. A coarctação, perto do ligamento arterioso, cursa com hipertensão nos membros superiores e pulsos femorais reduzidos."}, "ramos_arco": {"nome": "Ramos do arco da aorta", "latim": "Truncus brachiocephalicus, a. carotis communis sinistra, a. subclavia sinistra", "oque": "Três ramos saem do arco, da direita para a esquerda: o tronco braquiocefálico (que se divide em subclávia e carótida comum direitas), a carótida comum esquerda e a subclávia esquerda.", "funcao": "Irrigam a cabeça, o pescoço e os membros superiores.", "clinica": "Uma variação comum é o chamado arco bovino, em que a carótida comum esquerda nasce do tronco braquiocefálico. Diferença de pressão importante entre os braços sugere estenose da subclávia ou dissecção."}, "tronco_pulmonar": {"nome": "Tronco e artérias pulmonares", "latim": "Truncus pulmonalis, aa. pulmonales", "oque": "O tronco sai do VD pelo cone arterial (infundíbulo), à frente e à esquerda da aorta, e se divide abaixo do arco nas artérias pulmonares direita e esquerda. A direita passa por trás da aorta ascendente e da veia cava superior.", "funcao": "Leva sangue venoso, pobre em oxigênio, aos pulmões. Por isso aparece em azul nos atlas, mesmo sendo artéria.", "clinica": "No tromboembolismo pulmonar, o êmbolo (geralmente de uma trombose venosa profunda dos membros inferiores) impacta na bifurcação ou nos ramos e sobrecarrega o VD de forma aguda. A hipertensão pulmonar é definida hoje por pressão média acima de 20 mmHg em repouso."}, "veia_cava_superior": {"nome": "Veia cava superior", "latim": "Vena cava superior", "oque": "Formada pela união das veias braquiocefálicas, recebe a veia ázigo e desemboca no átrio direito, sem valva.", "funcao": "Drena a cabeça, o pescoço, os membros superiores e parte do tórax.", "clinica": "A síndrome da veia cava superior, geralmente por tumor de pulmão ou linfoma, causa edema de face e braços, turgência venosa cervical e circulação colateral no tórax. É o trajeto final dos cateteres venosos centrais."}, "veia_cava_inferior": {"nome": "Veia cava inferior", "latim": "Vena cava inferior", "oque": "Maior veia do corpo. Atravessa o diafragma no nível de T8 e entra quase imediatamente no átrio direito. Na sua desembocadura há a válvula da VCI, rudimentar no adulto, que no feto direcionava o sangue para o forame oval.", "funcao": "Drena os membros inferiores, a pelve e o abdome.", "clinica": "No ultrassom à beira-leito, o diâmetro da VCI e a sua variação com a respiração ajudam a estimar a pressão no átrio direito e a volemia. Filtros de VCI são usados quando há trombose venosa e a anticoagulação é contraindicada."}, "veias_pulmonares": {"nome": "Veias pulmonares", "latim": "Venae pulmonales", "oque": "Em geral são quatro, uma superior e uma inferior de cada pulmão, e desembocam no átrio esquerdo. Não têm valvas.", "funcao": "Trazem o sangue oxigenado dos pulmões: são veias com sangue arterial, por isso aparecem em vermelho.", "clinica": "Na fibrilação atrial, os focos de disparo ficam com frequência em mangas musculares dentro das veias pulmonares. Esse é o princípio da ablação por isolamento das veias pulmonares."}, "ligamento_arterioso": {"nome": "Ligamento arterioso", "latim": "Ligamentum arteriosum", "oque": "Cordão fibroso que liga a origem da artéria pulmonar esquerda à face inferior do arco da aorta. É o que resta do ducto arterioso fetal. O nervo laríngeo recorrente esquerdo contorna o arco logo atrás dele.", "funcao": "No feto, o ducto desviava o sangue do tronco pulmonar para a aorta, já que os pulmões ainda não ventilam. Ele se fecha funcionalmente nos primeiros dias de vida.", "clinica": "Na persistência do canal arterial há um sopro contínuo em maquinaria. Indometacina ou ibuprofeno ajudam no fechamento; a prostaglandina E1 mantém o canal aberto nas cardiopatias que dependem dele."}, "coronaria_esquerda": {"nome": "Tronco da coronária esquerda", "latim": "Arteria coronaria sinistra", "oque": "Nasce do seio aórtico esquerdo, passa entre o tronco pulmonar e a aurícula esquerda e, depois de 1 a 2 cm, se divide em descendente anterior e circunflexa.", "funcao": "Por meio dos seus dois ramos, irriga a maior parte do ventrículo esquerdo.", "clinica": "Uma lesão grave no tronco da coronária esquerda coloca em risco uma enorme área de miocárdio e, em geral, indica revascularização."}, "descendente_anterior": {"nome": "Artéria descendente anterior", "latim": "Ramus interventricularis anterior", "oque": "Desce no sulco interventricular anterior até o ápice. Dá os ramos diagonais para a parede anterolateral do VE e os ramos septais para os dois terços anteriores do septo.", "funcao": "Irriga a parede anterior do VE, o ápice e a maior parte do septo interventricular.", "clinica": "É a artéria mais envolvida no infarto. Uma oclusão proximal dela, de alto risco, aparece no ECG como supradesnivelamento de ST de V1 a V4 (parede anterior)."}, "circunflexa": {"nome": "Artéria circunflexa", "latim": "Ramus circumflexus", "oque": "Segue pelo sulco coronário esquerdo, contornando a margem esquerda até a face posterior. Dá os ramos marginais esquerdos para a parede lateral do VE.", "funcao": "Irriga a parede lateral e parte da posterior do VE e o átrio esquerdo. Em cerca de 10% das pessoas (dominância esquerda), origina também a descendente posterior.", "clinica": "As oclusões da circunflexa são as que mais se escondem no ECG, porque a parede lateral e posterior aparecem pouco nas 12 derivações. As derivações V7 a V9 ajudam a revelar."}, "coronaria_direita": {"nome": "Artéria coronária direita", "latim": "Arteria coronaria dextra", "oque": "Nasce do seio aórtico direito e corre pelo sulco coronário direito. Dá o ramo do nó sinoatrial (em cerca de 60%), o ramo marginal direito e, na maioria das pessoas, a descendente posterior e o ramo do nó atrioventricular.", "funcao": "Irriga o átrio direito, quase todo o VD, a parede inferior do VE e o terço posterior do septo.", "clinica": "Sua oclusão causa infarto inferior, com supradesnivelamento de ST em DII, DIII e aVF. Bradicardia e bloqueios atrioventriculares são comuns porque os nós dependem dela. Vale procurar infarto de VD com a derivação V4R."}, "descendente_posterior": {"nome": "Artéria descendente posterior", "latim": "Ramus interventricularis posterior", "oque": "Desce no sulco interventricular posterior, na face diafragmática do coração.", "funcao": "Irriga a parede inferior dos ventrículos e o terço posterior do septo.", "clinica": "A artéria que dá origem à descendente posterior define a dominância coronária. Na maioria das pessoas é a coronária direita (dominância direita)."}, "veias_cardiacas": {"nome": "Veias cardíacas e seio coronário", "latim": "Venae cordis, sinus coronarius", "oque": "A veia cardíaca magna acompanha a descendente anterior e depois a circunflexa; a veia cardíaca média acompanha a descendente posterior. Ambas drenam no seio coronário, no sulco coronário posterior, que desemboca no átrio direito.", "funcao": "Devolvem ao átrio direito a maior parte do sangue venoso do próprio miocárdio.", "clinica": "O seio coronário é a via usada para posicionar o eletrodo do ventrículo esquerdo na terapia de ressincronização cardíaca (marca-passo biventricular)."}, "valva_tricuspide": {"nome": "Valva tricúspide", "latim": "Valva atrioventricularis dextra", "oque": "Valva entre o átrio e o ventrículo direitos, com três válvulas (anterior, posterior e septal) presas por cordas tendíneas aos músculos papilares.", "funcao": "Fecha no início da sístole, impedindo o refluxo para o átrio, e contribui para a primeira bulha (B1).", "clinica": "É a valva mais afetada na endocardite de usuários de drogas injetáveis. O sopro da insuficiência tricúspide aumenta na inspiração (sinal de Rivero-Carvallo)."}, "valva_mitral": {"nome": "Valva mitral", "latim": "Valva atrioventricularis sinistra", "oque": "Valva entre o átrio e o ventrículo esquerdos, com duas válvulas (anterior e posterior), cordas tendíneas e dois músculos papilares.", "funcao": "Fecha na sístole e é o principal componente da primeira bulha. É mais bem auscultada no ápice (foco mitral).", "clinica": "A estenose mitral é a sequela clássica da febre reumática, ainda frequente no Brasil: sopro diastólico em ruflar, com estalido de abertura. No prolapso mitral, ouve-se um clique mesossistólico."}, "valva_aortica": {"nome": "Valva da aorta", "latim": "Valva aortae", "oque": "Três válvulas semilunares (direita, esquerda e posterior). Atrás das válvulas direita e esquerda ficam os seios aórticos de onde nascem as coronárias.", "funcao": "Fecha no fim da sístole e forma o componente A2 da segunda bulha. O foco aórtico fica no 2º espaço intercostal direito.", "clinica": "A estenose aórtica degenerativa do idoso se manifesta com síncope, angina e dispneia, e um sopro sistólico em crescendo-decrescendo irradiado para as carótidas. A valva bicúspide é a cardiopatia congênita mais comum."}, "valva_pulmonar": {"nome": "Valva do tronco pulmonar", "latim": "Valva trunci pulmonalis", "oque": "Três válvulas semilunares (anterior, direita e esquerda) na saída do ventrículo direito.", "funcao": "Fecha no fim da sístole e forma o componente P2 da segunda bulha. O foco pulmonar fica no 2º espaço intercostal esquerdo.", "clinica": "O desdobramento fisiológico de B2 na inspiração acontece porque o maior retorno venoso atrasa o fechamento da pulmonar. Uma P2 hiperfonética sugere hipertensão pulmonar. A estenose pulmonar faz parte da tetralogia de Fallot."}, "pele": {"nome": "Pele", "latim": "Cutis", "oque": "Maior órgão do corpo, com cerca de 1,5 a 2 m² de área. Formada pela epiderme (epitélio estratificado queratinizado) e pela derme (tecido conjuntivo com vasos, nervos, glândulas e folículos), apoiada sobre a tela subcutânea.", "funcao": "Barreira contra agentes físicos, químicos e micro-organismos, termorregulação pelo suor e pelo controle do fluxo sanguíneo, sensibilidade tátil, térmica e dolorosa, e síntese de vitamina D.", "clinica": "A regra dos nove estima a superfície corporal queimada no adulto: cabeça 9%, cada membro superior 9%, tronco anterior 18%, tronco posterior 18%, cada membro inferior 18% e períneo 1%. Esse valor entra no cálculo da reposição volêmica (fórmula de Parkland)."}, "diafragma": {"nome": "Diafragma", "latim": "Diaphragma", "oque": "Músculo em cúpula que separa as cavidades torácica e abdominal, com um centro tendíneo. Tem três aberturas principais: o forame da veia cava (T8), o hiato esofágico (T10) e o hiato aórtico (T12).", "funcao": "Principal músculo da inspiração: ao contrair, desce e aumenta o volume do tórax. É inervado pelo nervo frênico (C3, C4 e C5).", "clinica": "Lesões medulares acima de C3 comprometem o nervo frênico e exigem ventilação mecânica. A irritação do diafragma pode causar dor referida no ombro, como no sinal de Kehr da ruptura esplênica."}, "estomago": {"nome": "Estômago", "latim": "Gaster", "oque": "Porção dilatada do tubo digestório entre o esôfago e o duodeno, no epigástrio e quadrante superior esquerdo. Divide-se em cárdia, fundo, corpo e parte pilórica.", "funcao": "Armazena e mistura o alimento, inicia a digestão das proteínas com pepsina e ácido clorídrico (das células parietais) e secreta o fator intrínseco, necessário para absorver a vitamina B12 no íleo.", "clinica": "As principais causas de úlcera péptica são o H. pylori e os anti-inflamatórios. Uma úlcera na parede posterior do duodeno pode erodir a artéria gastroduodenal e causar hemorragia grave. A gastrite atrófica autoimune leva à anemia perniciosa."}, "rim": {"nome": "Rim", "latim": "Ren", "oque": "Órgão retroperitoneal situado entre T12 e L3; o direito fica um pouco mais baixo por causa do fígado. No hilo entram a artéria e saem a veia e a pelve renal. Cada rim tem cerca de um milhão de néfrons.", "funcao": "Filtra o plasma (cerca de 180 litros de filtrado por dia), regula água, eletrólitos e equilíbrio ácido-base e produz eritropoetina e renina, além de ativar a vitamina D.", "clinica": "O sinal de Giordano (dor à punho-percussão lombar) sugere pielonefrite. Cálculos costumam parar em três estreitamentos do ureter: junção ureteropélvica, cruzamento dos vasos ilíacos e junção ureterovesical."}, "femur": {"nome": "Fêmur", "latim": "Femur", "oque": "Maior e mais resistente osso do corpo. A cabeça articula com o acetábulo; seguem o colo, os trocânteres maior e menor, a diáfise e os côndilos, que articulam com a tíbia e a patela.", "funcao": "Sustenta o peso do corpo e serve de alavanca para os músculos do quadril e da coxa.", "clinica": "Na fratura do colo do fêmur no idoso, o membro fica encurtado e em rotação lateral. Fraturas intracapsulares podem lesar os ramos da artéria circunflexa femoral medial, com risco de necrose avascular da cabeça."}, "cerebelo": {"nome": "Cerebelo", "latim": "Cerebellum", "oque": "Ocupa a fossa posterior do crânio, atrás da ponte e do bulbo e abaixo do tentório. Tem dois hemisférios unidos pelo verme e se liga ao tronco encefálico por três pares de pedúnculos.", "funcao": "Coordena os movimentos, o equilíbrio e o tônus, e participa da aprendizagem motora.", "clinica": "As lesões cerebelares dão sinais do mesmo lado: ataxia, dismetria na prova índex-nariz, disdiadococinesia, tremor de intenção e nistagmo. Lesões do verme, como no alcoolismo, causam ataxia de marcha e tronco."}, "traqueia": {"nome": "Traqueia", "latim": "Trachea", "oque": "Tubo de 10 a 12 cm sustentado por 16 a 20 anéis de cartilagem em forma de C, abertos para trás, onde a parede membranácea encosta no esôfago. Começa em C6 e se divide na carina, por volta de T4 e T5.", "funcao": "Conduz o ar e, com o epitélio ciliado e o muco, remove partículas inaladas.", "clinica": "O brônquio principal direito é mais curto, largo e vertical, por isso corpos estranhos aspirados e a intubação seletiva tendem a ir para a direita. Desvio da traqueia sugere pneumotórax hipertensivo (para o lado oposto) ou atelectasia (para o mesmo lado)."}, "baco": {"nome": "Baço", "latim": "Splen", "oque": "Fica no hipocôndrio esquerdo, entre a 9ª e a 11ª costelas, em contato com o diafragma, o estômago, o rim esquerdo e a flexura esquerda do colo. Tem polpa vermelha e polpa branca.", "funcao": "Filtra o sangue, remove hemácias envelhecidas e organiza respostas imunes contra antígenos que circulam no sangue.", "clinica": "É o órgão abdominal mais lesado no trauma fechado, sobretudo com fraturas das costelas inferiores esquerdas. Depois da esplenectomia, há risco de infecção grave por bactérias encapsuladas, e a vacinação é indicada."}, "utero": {"nome": "Útero", "latim": "Uterus", "oque": "Órgão muscular oco, em forma de pera invertida, situado na pelve entre a bexiga e o reto. Divide-se em fundo, corpo, istmo e colo, e sua parede tem endométrio, miométrio e perimétrio. Costuma estar em anteversão e anteflexão.", "funcao": "Recebe o embrião, sustenta a gestação e expulsa o feto no parto. Fora da gestação, o endométrio descama a cada ciclo na menstruação.", "clinica": "Os leiomiomas (miomas) são os tumores pélvicos mais comuns na mulher e causam sangramento aumentado e dor. O colo é o alvo do rastreamento do câncer do colo do útero, ligado à infecção persistente por HPV de alto risco. Na histerectomia, o ureter passa logo abaixo da artéria uterina e corre risco de lesão."}, "ovario": {"nome": "Ovário", "latim": "Ovarium", "oque": "Gônada feminina, do tamanho aproximado de uma amêndoa, presa ao ligamento largo pelo mesovário. O ligamento suspensor leva os vasos ováricos e o ligamento útero-ovárico o liga ao útero.", "funcao": "Produz os oócitos e os hormônios sexuais femininos (estrogênios e progesterona), além da inibina.", "clinica": "A torção ovariana causa dor pélvica súbita e intensa e é uma emergência cirúrgica. A síndrome dos ovários policísticos reúne anovulação, hiperandrogenismo e múltiplos folículos. A veia ovárica direita drena na veia cava inferior, e a esquerda, na veia renal esquerda."}, "mama": {"nome": "Glândula mamária", "latim": "Glandula mammaria", "oque": "Formada por 15 a 20 lobos de tecido glandular, cada um drenado por um ducto lactífero que se dilata no seio lactífero antes de chegar à papila. O restante é gordura, sustentada pelos ligamentos suspensores (de Cooper).", "funcao": "Produz e ejeta o leite na lactação, sob ação da prolactina (produção) e da ocitocina (ejeção).", "clinica": "A maior parte dos cânceres de mama surge no quadrante superior lateral, onde há mais tecido glandular. Retração da pele, com aspecto de casca de laranja, ou do mamilo sugere invasão dos ligamentos suspensores ou dos linfáticos. A drenagem linfática vai principalmente para os linfonodos axilares."}, "pulmao": {"nome": "Pulmão", "latim": "Pulmo", "oque": "O pulmão direito tem três lobos (superior, médio e inferior) e dez segmentos; o esquerdo tem dois lobos e a língula. Cada segmento broncopulmonar tem seu próprio brônquio segmentar e ramo da artéria pulmonar.", "funcao": "Realiza as trocas gasosas nos alvéolos: entrada de oxigênio no sangue e saída de gás carbônico.", "clinica": "Por ter brônquio e vasos próprios, o segmento broncopulmonar pode ser retirado isoladamente (segmentectomia). A pneumonia aspirativa em decúbito dorsal costuma atingir o segmento superior do lobo inferior direito. O lobo médio só é bem auscultado pela face anterior do tórax."}, "figado": {"nome": "Fígado", "latim": "Hepar", "oque": "Maior glândula do corpo, com cerca de 1,5 kg, no hipocôndrio direito. Divide-se em oito segmentos funcionais de Couinaud, cada um com seu próprio ramo portal, arterial e biliar, separados pelas veias hepáticas. Recebe sangue duplo: cerca de 75% pela veia porta e 25% pela artéria hepática.", "funcao": "Metaboliza carboidratos, lipídios e proteínas, sintetiza albumina e fatores de coagulação, produz a bile e metaboliza fármacos e toxinas.", "clinica": "Na hipertensão portal, as anastomoses portossistêmicas se dilatam e formam varizes de esôfago, circulação colateral periumbilical e hemorroidas. A divisão de Couinaud permite ressecções hepáticas por segmento."}};
+(async function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const bootMsg=$('bootMsg'),bootBar=$('bootBar');
+const icons=()=>{try{if(window.lucide)lucide.createIcons();}catch(e){}};
+icons();
+if(!window.THREE||!THREE.OrbitControls){bootMsg.textContent='O motor 3D não carregou. Verifique a conexão e recarregue a página.';return;}
+if(!('DecompressionStream' in window)){bootMsg.textContent='Este navegador é antigo demais para abrir o modelo. Atualize o Chrome, Edge, Safari ou Firefox.';return;}
+if(THREE.ColorManagement)THREE.ColorManagement.legacyMode=false;
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOBILE=matchMedia('(max-width: 900px)').matches;
+const tick=()=>new Promise(r=>setTimeout(r,0));
+
+const GROUP=['Pele e anexos','Músculo superficial','Músculo profundo e tecido conjuntivo','Esqueleto','Órgãos','Artérias','Veias','Sistema nervoso'];
+const GCOL=['#d9a389','#b0382f','#7e2420','#e3d5b8','#d6948a','#c0282d','#2f4f9a','#e2bf55'];
+const GROUP_TXT=['A pele e seus anexos formam a camada mais externa do corpo. Remova-a nas camadas para ver a musculatura.',
+ 'Fica logo abaixo da pele e da tela subcutânea. São os músculos que se palpam e se observam na inspeção física.',
+ 'Estruturas cobertas por outros músculos, além de tendões, ligamentos e membranas.',
+ 'Ossos, cartilagens, discos intervertebrais e dentes.',
+ 'Órgãos das cavidades torácica, abdominal e pélvica, além de estruturas do olho, da faringe e das vias aéreas.',
+ 'Vasos que levam o sangue a partir do coração, representados em vermelho.',
+ 'Vasos que trazem o sangue de volta ao coração, representados em azul.',
+ 'Encéfalo, medula, nervos e gânglios. Nervos em amarelo, líquor dos ventrículos em azul-claro.'];
+const SKIN='<svg viewBox="0 0 32 32"><circle cx="16" cy="6.2" r="3.4" fill="#d9a389"/><path d="M11 11h10c1.5 0 2.5 1 2.7 2.4l1.3 7.4c.2 1-.6 1.8-1.5 1.8-.8 0-1.3-.5-1.5-1.2l-.9-5.2V30h-3.6v-8.6h-1V30h-3.6V16.2l-.9 5.2c-.2.7-.7 1.2-1.5 1.2-.9 0-1.7-.8-1.5-1.8l1.3-7.4C8.5 12 9.5 11 11 11z" fill="#d9a389"/></svg>';
+const MUS=(c,s)=>'<svg viewBox="0 0 32 32"><defs><clipPath id="cp'+s+'"><circle cx="16" cy="6.2" r="3.4"/><path d="M11 11h10c1.5 0 2.5 1 2.7 2.4l1.3 7.4c.2 1-.6 1.8-1.5 1.8-.8 0-1.3-.5-1.5-1.2l-.9-5.2V30h-3.6v-8.6h-1V30h-3.6V16.2l-.9 5.2c-.2.7-.7 1.2-1.5 1.2-.9 0-1.7-.8-1.5-1.8l1.3-7.4C8.5 12 9.5 11 11 11z"/></clipPath></defs><g clip-path="url(#cp'+s+')"><rect width="32" height="32" fill="'+c+'"/>'+
+ Array.from({length:9},(_,i)=>'<path d="M'+(i*4-6)+' 32 L'+(i*4+6)+' 0" stroke="rgba(255,255,255,.28)" stroke-width="1"/>').join('')+'</g></svg>';
+const BONE='<svg viewBox="0 0 32 32" fill="none" stroke="#d9c9a4" stroke-width="1.7" stroke-linecap="round"><circle cx="16" cy="5.6" r="3"/><path d="M16 9v11"/><path d="M11 12.2c1.6 1 8.4 1 10 0M11.4 15c1.6.9 7.6.9 9.2 0M12 17.6c1.5.7 6.5.7 8 0"/><path d="M12 21.5c1.4-1.4 6.6-1.4 8 0"/><path d="M13.4 22.5l-1 7.5M18.6 22.5l1 7.5M11 11.5l-2.6 8.5M21 11.5l2.6 8.5"/></svg>';
+const ORG='<svg viewBox="0 0 32 32"><path d="M9.5 8c-3 1.5-4 6-3.4 10 .5 3.3 2.6 5 4.4 4.3 1.6-.6 1.6-3 1.6-5.6V9.2C12 8 10.8 7.4 9.5 8z" fill="#dba3a0"/><path d="M22.5 8c3 1.5 4 6 3.4 10-.5 3.3-2.6 5-4.4 4.3-1.6-.6-1.6-3-1.6-5.6V9.2C20 8 21.2 7.4 22.5 8z" fill="#dba3a0"/><path d="M16 26c-3.5-2.6-6-4.8-6-7.6 0-1.8 1.4-3.2 3.1-3.2 1.2 0 2.3.7 2.9 1.7.6-1 1.7-1.7 2.9-1.7 1.7 0 3.1 1.4 3.1 3.2 0 2.8-2.5 5-6 7.6z" fill="#b8323a"/></svg>';
+const LEVELS=[['Pele','O corpo visto por fora',SKIN],['Músculos superficiais','Logo abaixo da pele',MUS('#b0382f','a')],['Músculos profundos','Sob os superficiais',MUS('#6f1f1c','b')],['Esqueleto e órgãos','Sem a musculatura',BONE],['Órgãos e vasos','Sem o esqueleto',ORG]];
+const TOGGLES=[[5,'Artérias','#c0282d'],[6,'Veias','#2f4f9a'],[7,'Encéfalo e nervos','#e2bf55']];
+const CREDIT={m:'Modelo masculino: BodyParts3D, © The Database Center for Life Science, CC BY 4.0. Malhas preparadas pelo projeto Human Atlas.',
+ f:'Modelo feminino: Human Reference Atlas (HuBMAP), K. Browne e H. Schlehlein, baseado no Visible Human Female, CC BY 4.0. Ossos dos membros superiores e do crânio adaptados do BodyParts3D.'};
+
+/* ---------- cena ---------- */
+const canvas=$('scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(MOBILE?1.75:2,devicePixelRatio||1));
+renderer.setSize(innerWidth,innerHeight,false);
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;renderer.setClearColor(0,0);
+const scene=new THREE.Scene();
+if(THREE.RoomEnvironment){try{const pm=new THREE.PMREMGenerator(renderer);scene.environment=pm.fromScene(new THREE.RoomEnvironment(),0.04).texture;}catch(e){}}
+const camera=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,0.01,60);scene.add(camera);
+scene.add(new THREE.HemisphereLight(0xfff4ee,0x2b2038,0.45));
+const key=new THREE.DirectionalLight(0xfff1e8,1.35);key.position.set(2,3,2);camera.add(key);const kt=new THREE.Object3D();kt.position.set(0,0,-5);camera.add(kt);key.target=kt;
+const rim=new THREE.DirectionalLight(0xbdc6ff,0.9);rim.position.set(-3,2,-4);scene.add(rim);
+const rim2=new THREE.DirectionalLight(0xffd4c6,0.45);rim2.position.set(3,1,-3);scene.add(rim2);
+{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');const g=x.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(10,12,30,.32)');g.addColorStop(1,'rgba(10,12,30,0)');x.fillStyle=g;x.fillRect(0,0,128,128);
+ const sh=new THREE.Mesh(new THREE.PlaneGeometry(1.3,0.85),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=0.002;scene.add(sh);}
+const controls=new THREE.OrbitControls(camera,canvas);
+controls.enableDamping=true;controls.dampingFactor=.08;controls.rotateSpeed=.75;controls.zoomSpeed=.9;controls.screenSpacePanning=true;controls.minDistance=0.2;controls.maxDistance=7;controls.autoRotateSpeed=0.8;
+
+/* ---------- shaders ---------- */
+const visData=new Uint8Array(4096*4).fill(255);
+const visTex=new THREE.DataTexture(visData,4096,1,THREE.RGBAFormat);visTex.magFilter=visTex.minFilter=THREE.NearestFilter;visTex.needsUpdate=true;
+const SU={uSel:{value:-1},uHov:{value:-1},uIso:{value:-1},uTime:{value:0},uHL:{value:new THREE.Color('#ffc480')},uVis:{value:visTex},uArm:{value:0},uWound:{value:new THREE.Vector4(0,0,0,0)}};
+const NOISE='float h3(vec3 p){p=fract(p*0.3183099+.1);p*=17.0;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}\n'+
+'float vn(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z);}\n';
+const DISCARD='if(vArm>0.5&&uArm>0.0){if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)<uArm)discard;}\nbool isoMe=uIso>-0.5&&abs(vPart-uIso)<0.5;\nif(uIso>-0.5&&!isoMe)discard;\nif(texture2D(uVis,vec2((vPart+0.5)/4096.0,0.5)).r<0.5)discard;\nfloat dEdge=0.0;\n'+
+'{float dis=max(uDis,uBody);if(isoMe)dis=uBody;float dv=0.32*vn(vWP*40.0)+0.68*(1.0-clamp(vWP.y/1.75,0.0,1.0));float thr=dis*1.2-0.1;if(dv<thr)discard;dEdge=(1.0-smoothstep(0.0,0.03,dv-thr))*step(0.001,dis)*step(dis,0.999);}\n';
+const GLOW='float isSel=1.0-step(0.5,abs(vPart-uSel));float isHov=1.0-step(0.5,abs(vPart-uHov));\n'+
+'totalEmissiveRadiance+=uHL*(dEdge*3.0+isSel*(0.26+0.12*sin(uTime*4.0))+isHov*0.15);\n';
+const HEAD='uniform float uKind;varying vec3 vFib;varying float vT;varying float vAO;uniform float uArm;uniform vec4 uWound;varying float vArm;uniform float uDis;uniform float uBody;uniform float uSel;uniform float uHov;uniform float uIso;uniform float uTime;uniform vec3 uHL;uniform sampler2D uVis;\nvarying float vPart;\nvarying vec3 vWP;\n';
+const WOUND='if(uWound.w>0.0){vec3 dd=vWP-uWound.xyz;float e=length(vec2(dd.x*0.9,dd.y*4.2))+abs(dd.z)*0.3;float n=vn(vWP*700.0)*0.0015;float cut=1.0-smoothstep(uWound.w*0.25,uWound.w*0.42,e+n);float halo=(1.0-smoothstep(uWound.w*0.4,uWound.w*1.6,length(dd)+n))*0.55;diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.55,0.2,0.24),halo);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.2,0.01,0.02),cut);}\n';
+const DETAIL='float tenW=0.0;\n'+
+'if(dot(vFib,vFib)>0.25){vec3 ax=normalize(vFib);vec3 u=normalize(cross(ax,abs(ax.y)<0.9?vec3(0.,1.,0.):vec3(1.,0.,0.)));vec3 w=cross(ax,u);'+
+'float f=vn(vec3(dot(vWP,u)*1500.,dot(vWP,w)*1500.,dot(vWP,ax)*55.));float f2=vn(vec3(dot(vWP,u)*360.,dot(vWP,w)*360.,dot(vWP,ax)*16.));'+
+'tenW=smoothstep(0.8,0.97,abs(vT));vec3 mus=diffuseColor.rgb*(0.74+0.36*f)*(0.9+0.2*f2);vec3 tend=vec3(0.88,0.84,0.76)*(0.92+0.1*f);diffuseColor.rgb=mix(mus,tend,tenW);}\n'+
+'if(uKind<0.5){float p=vn(vWP*2600.);float m=vn(vWP*80.);diffuseColor.rgb*=(0.95+0.08*m)*(1.0-0.08*smoothstep(0.72,0.95,p));}\n'+
+'else if(abs(uKind-3.)<0.5){float p=vn(vWP*650.);float q=vn(vWP*90.);diffuseColor.rgb*=(0.88+0.14*p)*(0.94+0.1*q);}\n'+
+'else if(abs(uKind-4.)<0.5||abs(uKind-7.)<0.5){float p=vn(vWP*170.);diffuseColor.rgb*=0.9+0.14*p;}\n'+
+'diffuseColor.rgb*=vAO;\n';
+const MP=[{roughness:.56,clearcoat:.05,sheen:.7,sheenRoughness:.65,sheenColor:new THREE.Color('#ffae96')},{roughness:.36,clearcoat:.55,clearcoatRoughness:.45},{roughness:.38,clearcoat:.5,clearcoatRoughness:.45},
+ {roughness:.62,clearcoat:.15},{roughness:.34,clearcoat:.7,clearcoatRoughness:.3},{roughness:.3,clearcoat:.85},{roughness:.3,clearcoat:.85},{roughness:.45,clearcoat:.3}];
+function makeMat(g,GU,BU){
+ const m=new THREE.MeshPhysicalMaterial(Object.assign({vertexColors:true,metalness:0,side:g===0?THREE.FrontSide:THREE.DoubleSide},MP[g]));
+ m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,SU,{uDis:GU,uBody:BU,uKind:{value:g}});
+  sh.vertexShader='attribute vec3 aFib;attribute float aT;attribute float aAO;varying vec3 vFib;varying float vT;varying float vAO;\nattribute float aPart;\nattribute float aArm;\nvarying float vArm;\nvarying float vPart;\nvarying vec3 vWP;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvPart=aPart;vArm=aArm;vFib=aFib;vT=aT;vAO=aAO;\nvWP=(modelMatrix*vec4(transformed,1.0)).xyz;');
+  sh.fragmentShader=HEAD+NOISE+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\n'+DISCARD).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n'+GLOW).replace('#include <color_fragment>','#include <color_fragment>\n'+DETAIL+WOUND).replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,0.3,tenW);');};
+ return m;}
+function makePick(GU,BU){return new THREE.ShaderMaterial({side:THREE.DoubleSide,uniforms:{uDis:GU,uBody:BU,uIso:SU.uIso,uVis:SU.uVis,uArm:SU.uArm},
+ vertexShader:'attribute float aPart;attribute float aArm;varying float vArm;varying float vPart;varying vec3 vWP;void main(){vPart=aPart;vArm=aArm;vec4 wp=modelMatrix*vec4(position,1.);vWP=wp.xyz;gl_Position=projectionMatrix*viewMatrix*wp;}',
+ fragmentShader:'uniform float uDis;uniform float uBody;uniform float uIso;uniform sampler2D uVis;uniform float uArm;varying float vArm;varying float vPart;varying vec3 vWP;\n'+NOISE+'void main(){\nif(vArm>0.5&&uArm>0.0)discard;\n'+DISCARD+'float id=vPart+1.0;gl_FragColor=vec4(mod(id,256.0)/255.0,mod(floor(id/256.0),256.0)/255.0,floor(id/65536.0)/255.0,1.0);}'});}
+
+/* ---------- corpos ---------- */
+const BODIES={};
+const CASE1={"target":[-0.162,1.2744,0.0166],"normal":[-0.9868,0.0,0.1618],"tangent":[0.060499999672174454,-0.46000000834465027,0.8858000040054321],"wound":[-0.085,1.31,0.1108],"tri":[[-0.1529,1.2841,0.0612],[-0.1548,1.2837,0.0554],[-0.1567,1.2834,0.0496],[-0.1581,1.283,0.0435],[-0.1595,1.2826,0.0374],[-0.1608,1.2822,0.0314],[-0.1624,1.2819,0.0255],[-0.1643,1.2815,0.0195],[-0.1662,1.2811,0.0136],[-0.2101,1.2807,0.012],[-0.2189,1.2804,0.005],[-0.2244,1.28,-0.0026],[-0.2302,1.2796,-0.0105],[-0.234,1.2792,-0.0186],[-0.2369,1.2789,-0.0267],[-0.2386,1.2785,-0.0347],[-0.239,1.2781,-0.0426],[-0.2395,1.2777,-0.0503],[-0.2388,1.2774,-0.0577],[-0.2368,1.277,-0.0646],[-0.2334,1.2766,-0.0709],[-0.2288,1.2763,-0.0766],[-0.2232,1.2759,-0.0815],[-0.2179,1.2755,-0.0861],[-0.2106,1.2751,-0.0896],[-0.2029,1.2748,-0.0923],[-0.1932,1.2744,-0.0937],[-0.1932,1.2744,-0.0937],[-0.1996,1.2783,-0.0927],[-0.2056,1.2821,-0.0914],[-0.2098,1.286,-0.0892],[-0.2139,1.2899,-0.0868],[-0.2181,1.2937,-0.0844],[-0.2217,1.2976,-0.0818],[-0.2255,1.3015,-0.079],[-0.2287,1.3053,-0.0761],[-0.2318,1.3092,-0.0731],[-0.2342,1.3131,-0.0698],[-0.236,1.317,-0.0664],[-0.2375,1.3208,-0.0628],[-0.2384,1.3247,-0.0592],[-0.2392,1.3286,-0.0556],[-0.2401,1.3324,-0.052],[-0.2406,1.3363,-0.0483],[-0.2405,1.3402,-0.0446],[-0.2404,1.344,-0.041],[-0.24,1.3479,-0.0373],[-0.2391,1.3518,-0.0337],[-0.2382,1.3557,-0.0301],[-0.2367,1.3595,-0.0266],[-0.235,1.3634,-0.0231],[-0.2329,1.3673,-0.0198],[-0.2307,1.3711,-0.0165],[-0.2281,1.375,-0.0133],[-0.2281,1.375,-0.0133],[-0.2273,1.3715,-0.0104],[-0.2263,1.368,-0.0075],[-0.2247,1.3645,-0.0046],[-0.2227,1.361,-0.0016],[-0.2208,1.3575,0.0014],[-0.2178,1.354,0.0044],[-0.2148,1.3505,0.0073],[-0.2118,1.347,0.0103],[-0.2087,1.3435,0.0132],[-0.205,1.34,0.0161],[-0.2011,1.3365,0.0189],[-0.1973,1.333,0.0217],[-0.193,1.3296,0.0244],[-0.1866,1.3261,0.0266],[-0.1763,1.3226,0.0278],[-0.17,1.3191,0.0297],[-0.1668,1.3156,0.0323],[-0.1648,1.3121,0.0351],[-0.1633,1.3086,0.0382],[-0.1617,1.3051,0.0413],[-0.1601,1.3016,0.0444],[-0.1585,1.2981,0.0476],[-0.1572,1.2946,0.0509],[-0.1558,1.2911,0.0543],[-0.1544,1.2876,0.0577],[-0.1529,1.2841,0.0612]],"skinPart":0,"skinArm":"/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////0fx////////f+D/Af7////////////+//7N+/8fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAIzf///uIKr/////////////////eRQKAAAAAAAAAAAAAAAAAAAAEAAAAACYt/8P/P///////////////////////////////////////////////////////////////////0/w3/D////7zP//////////////////////////+/sfDwEAQBMAAAAAAAAAgLj////////////////fEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAvhcA6v///////////////zY8AQAA7wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAavdPb3//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9nwVu//AMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP7///9/AJCA/v////////8f/v//f+QDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+P8fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADA/////98HBAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANgMQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4f/sXAAAAAAAAAAAAAAAAAEAMSLuPAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAEAAAAAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==","armParts":[73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,113,117,119,121,123,125,256,260,262,264,266,270,272,274,276,278,280,282,284,286,290,300,302,304,549,550,552,553,554,646,657,658,660,676,677,679,680,681,703,704,706,708,710,712,715,720,721,726,734,735,740,741,742,743,1337,1340,1341,1343,1345,1347,1349,1350,1351,1353,1354,1357,1358,1359,1360,1362,1369,1370,1386,1387,1388,1389,1391,1394,1395,1396,1397,1398,1399,1400,1401,1402,1403,1404,1405,1781,1782,1785,1787,1788,1789,1790,1792,1795,1809,1810,1811,1812,1813,1814,1815,1816,1817,1818,1819,1820,1821],"ica":[1213,1699]};const ARMSET=new Set(CASE1.armParts);const SKINARM=Uint8Array.from(atob(CASE1.skinArm),c=>c.charCodeAt(0));
+async function buildBody(key,progress){
+ const mr=await fetch(FILES[key]+'.json');if(!mr.ok)throw new Error('não encontrei '+FILES[key]+'.json');
+ const M=await mr.json(),P=M.parts,NV=M.nv,NI=M.ni;
+ const br=await fetch(FILES[key]+'.bin');if(!br.ok)throw new Error('não encontrei '+FILES[key]+'.bin');
+ const total=+br.headers.get('content-length')||0,rd=br.body.getReader(),chunks=[];let got=0;
+ for(;;){const {done,value}=await rd.read();if(done)break;chunks.push(value);got+=value.length;progress&&progress(total?0.3*got/total:0.15,'Baixando o modelo… '+(got/1e6).toFixed(1)+' MB');}
+ const bin=new Uint8Array(got);{let o=0;for(const c of chunks){bin.set(c,o);o+=c.length;}}
+ progress&&progress(.32,'Descompactando…');await tick();
+ const u8=new Uint8Array(await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+ const ctr=M.ctr,h=M.half/32767;
+ const vStart=new Uint32Array(P.length),iStart=new Uint32Array(P.length);
+ {let v=0,i=0;for(let k=0;k<P.length;k++){vStart[k]=v;iStart[k]=i;v+=P[k][4];i+=P[k][5];}}
+ const pos=new Float32Array(NV*3);
+ for(let c=0;c<3;c++){const lo=c*2*NV,hi=lo+NV;
+  for(let k=0;k<P.length;k++){let prev=0;const vs=vStart[k],n=P[k][4];
+   for(let j=0;j<n;j++){const o=vs+j,z=u8[lo+o]|(u8[hi+o]<<8);const d=(z>>>1)^-(z&1);prev=((prev+d)<<16)>>16;pos[o*3+c]=prev*h+ctr[c];}}}
+ const ib=6*NV,IND=new Uint32Array(NI);
+ for(let k=0;k<P.length;k++){let hw=0;const is=iStart[k],m=P[k][5];
+  for(let j=0;j<m;j++){const o=ib+is+j,code=u8[o]|(u8[o+NI]<<8)|(u8[o+2*NI]<<16);IND[is+j]=code===0?hw++:hw-code;}}
+ progress&&progress(.45,'Montando as camadas…');await tick();
+ const B={key,P,meshes:[],GU:[0,1,2,3,4,5,6,7].map(()=>({value:0})),BU:{value:key==='m'?0:1},group:new THREE.Group(),pick:new THREE.Scene()};
+ scene.add(B.group);
+ let rnd=7;const rand=()=>{rnd=(rnd*16807)%2147483647;return rnd/2147483647;};const col=new THREE.Color();
+ for(let g=0;g<8;g++){
+  const ks=[];for(let k=0;k<P.length;k++)if(P[k][2]===g)ks.push(k);
+  if(!ks.length){B.meshes.push(null);continue;}
+  let nv=0,ni=0;ks.forEach(k=>{nv+=P[k][4];ni+=P[k][5];});
+  const gp=new Float32Array(nv*3),gc=new Uint8Array(nv*3),gpart=new Float32Array(nv),garm=new Float32Array(nv),gi=new Uint32Array(ni);let vo=0,io=0;
+  for(const k of ks){const p=P[k],vs=vStart[k],n=p[4];gp.set(pos.subarray(vs*3,(vs+n)*3),vo*3);
+   col.set(p[6]);const jit=0.9+rand()*0.18,r=Math.min(255,col.r*jit*255),gg=Math.min(255,col.g*jit*255),bb=Math.min(255,col.b*jit*255);
+   for(let j=0;j<n;j++){const b=(vo+j)*3;gc[b]=r;gc[b+1]=gg;gc[b+2]=bb;gpart[vo+j]=k;}
+   if(key==='m'){if(ARMSET.has(k))garm.fill(1,vo,vo+n);else if(k===CASE1.skinPart)for(let j=0;j<n;j++)if(SKINARM[j>>3]&(1<<(j&7)))garm[vo+j]=1;}
+   const is=iStart[k],m=p[5];for(let j=0;j<m;j++)gi[io+j]=IND[is+j]+vo;vo+=n;io+=m;}
+  const gfib=new Float32Array(nv*3),gt=new Float32Array(nv);
+  if(g===1||g===2){let vo2=0;for(const k of ks){const p=P[k],n=p[4];
+   if(p[6]==='#9b2e29'&&n>8){let cx=0,cy=0,cz=0;for(let j=0;j<n;j++){const b=(vo2+j)*3;cx+=gp[b];cy+=gp[b+1];cz+=gp[b+2];}cx/=n;cy/=n;cz/=n;
+    let xx=0,xy=0,xz=0,yy=0,yz=0,zz=0;for(let j=0;j<n;j++){const b=(vo2+j)*3,x=gp[b]-cx,y=gp[b+1]-cy,z=gp[b+2]-cz;xx+=x*x;xy+=x*y;xz+=x*z;yy+=y*y;yz+=y*z;zz+=z*z;}
+    let ax=[0.3,0.9,0.2];for(let it=0;it<16;it++){const v=[xx*ax[0]+xy*ax[1]+xz*ax[2],xy*ax[0]+yy*ax[1]+yz*ax[2],xz*ax[0]+yz*ax[1]+zz*ax[2]];const l=Math.hypot(v[0],v[1],v[2])||1;ax=[v[0]/l,v[1]/l,v[2]/l];}
+    let hl=1e-6;for(let j=0;j<n;j++){const b=(vo2+j)*3;hl=Math.max(hl,Math.abs((gp[b]-cx)*ax[0]+(gp[b+1]-cy)*ax[1]+(gp[b+2]-cz)*ax[2]));}
+    const flat=/Diafragma|Platisma|oblíquo externo|serrátil|intercostais/i.test(p[0]);
+    for(let j=0;j<n;j++){const b=(vo2+j)*3;gfib[b]=ax[0];gfib[b+1]=ax[1];gfib[b+2]=ax[2];gt[vo2+j]=flat?0:((gp[b]-cx)*ax[0]+(gp[b+1]-cy)*ax[1]+(gp[b+2]-cz)*ax[2])/hl;}}
+   vo2+=n;}}
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(gp,3));geo.setAttribute('color',new THREE.BufferAttribute(gc,3,true));
+  geo.setAttribute('aFib',new THREE.BufferAttribute(gfib,3));geo.setAttribute('aT',new THREE.BufferAttribute(gt,1));
+  geo.setAttribute('aPart',new THREE.BufferAttribute(gpart,1));geo.setAttribute('aArm',new THREE.BufferAttribute(garm,1));geo.setIndex(new THREE.BufferAttribute(gi,1));geo.computeVertexNormals();
+  {const nr=geo.attributes.normal.array,sx=new Float32Array(nv*3),cn=new Float32Array(nv),el=new Float32Array(nv),ao=new Float32Array(nv);
+   const add=(a,b)=>{const A=a*3,B=b*3;sx[A]+=gp[B];sx[A+1]+=gp[B+1];sx[A+2]+=gp[B+2];cn[a]++;el[a]+=Math.hypot(gp[A]-gp[B],gp[A+1]-gp[B+1],gp[A+2]-gp[B+2]);};
+   for(let i=0;i<ni;i+=3){const a=gi[i],b=gi[i+1],c=gi[i+2];add(a,b);add(a,c);add(b,a);add(b,c);add(c,a);add(c,b);}
+   for(let v=0;v<nv;v++){if(!cn[v]){ao[v]=1;continue;}const A=v*3,m=el[v]/cn[v]+1e-6;const d=((sx[A]/cn[v]-gp[A])*nr[A]+(sx[A+1]/cn[v]-gp[A+1])*nr[A+1]+(sx[A+2]/cn[v]-gp[A+2])*nr[A+2])/m;ao[v]=Number.isFinite(d)?1-Math.max(-0.06,Math.min(0.42,d*1.25)):1;}
+   const s2=new Float32Array(nv),c2=new Float32Array(nv);for(let i=0;i<ni;i+=3){const a=gi[i],b=gi[i+1],c=gi[i+2];s2[a]+=ao[b]+ao[c];s2[b]+=ao[a]+ao[c];s2[c]+=ao[a]+ao[b];c2[a]+=2;c2[b]+=2;c2[c]+=2;}
+   for(let v=0;v<nv;v++)if(c2[v])ao[v]=0.5*ao[v]+0.5*s2[v]/c2[v];
+   geo.setAttribute('aAO',new THREE.BufferAttribute(ao,1));}
+  const mesh=new THREE.Mesh(geo,makeMat(g,B.GU[g],B.BU));mesh.frustumCulled=false;B.group.add(mesh);B.meshes.push(mesh);
+  const pm=new THREE.Mesh(geo,makePick(B.GU[g],B.BU));pm.frustumCulled=false;B.pick.add(pm);mesh.userData.pick=pm;
+  progress&&progress(.45+.5*(g+1)/8,'Montando as camadas…');await tick();}
+ B.center=P.map(p=>{const b=p[8];return [(b[0]+b[3])/2,(b[1]+b[4])/2,(b[2]+b[5])/2];});
+ B.idx=P.map((p,k)=>({k,t:norm(p[0]+' '+p[1]+' '+sideTxt(p[3]))}));
+ BODIES[key]=B;return B;}
+
+/* ---------- estado ---------- */
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function sideTxt(s){return s==='R'?'Lado direito':s==='L'?'Lado esquerdo':'';}
+let body=null,level=0,selected=-1,isoPart=-1,hidden=new Set(),switching=false;const toggles={5:true,6:true,7:true};
+function groupTarget(g){let t=0;if(g===0)t=level>=1;else if(g===1)t=level>=2;else if(g===2)t=level>=3;else if(g===3)t=level>=4;if(g>=5&&!toggles[g])t=1;return t?1:0;}
+function setLevel(l){level=Math.max(0,Math.min(4,l));renderLevels();}
+function renderLevels(){const box=$('levels');box.innerHTML='';
+ LEVELS.forEach((L,i)=>{const b=document.createElement('button');b.type='button';b.className='lv'+(i<level?' gone':'');b.setAttribute('aria-current',i===level);
+  b.innerHTML='<span class="tile">'+L[2]+'</span><div><b>'+L[0]+'</b><span>'+L[1]+'</span></div>';b.onclick=()=>setLevel(i);box.appendChild(b);});
+ $('lvCap').textContent=(level+1)+' de 5';
+ $('fnote').style.display=body&&body.key==='f'&&(level===1||level===2)?'block':'none';}
+function renderToggles(){const box=$('toggles');box.innerHTML='';
+ TOGGLES.forEach(([g,n,c])=>{const b=document.createElement('button');b.type='button';b.className='tg';b.setAttribute('role','switch');b.setAttribute('aria-checked',toggles[g]);
+  b.innerHTML='<i style="background:'+c+'"></i><span class="nm">'+n+'</span><span class="sw"></span>';b.onclick=()=>{toggles[g]=!toggles[g];b.setAttribute('aria-checked',toggles[g]);};box.appendChild(b);});}
+renderLevels();renderToggles();
+function setVis(k,v){visData[k*4]=v?255:0;visTex.needsUpdate=true;}
+function resetHidden(){visData.fill(255);visTex.needsUpdate=true;hidden.clear();updHid();}
+function updHid(){const n=hidden.size,b=$('hidCount');b.hidden=!n;b.textContent=n;}
+
+/* ---------- câmera ---------- */
+const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;let tween=null;
+function flyTo(pos,target,dur){if(REDUCED)dur=Math.min(dur,300);
+ const t0=controls.target.clone(),o0=camera.position.clone().sub(t0),o1=pos.clone().sub(target),d0=o0.length(),d1=o1.length();o0.normalize();o1.normalize();
+ const st=performance.now();controls.enabled=false;
+ tween=now=>{const k=Math.min(1,(now-st)/dur),e=ease(k);controls.target.lerpVectors(t0,target,e);
+  const dir=o0.clone().lerp(o1,e);if(dir.lengthSq()<1e-6)dir.copy(o1);dir.normalize();
+  camera.position.copy(controls.target).addScaledVector(dir,Math.exp(Math.log(d0)+(Math.log(d1)-Math.log(d0))*e));
+  if(k>=1){tween=null;controls.enabled=true;}};}
+const HOME_T=new THREE.Vector3(0,0.86,0);const homeDist=()=>MOBILE?5.8:4.4;
+function goHome(){flyTo(new THREE.Vector3(0.3,1.0,homeDist()),HOME_T,1300);}
+const VIEWS={ant:[0.25,0.15,1],post:[-0.2,0.15,-1],r:[-1,0.12,0.15],l:[1,0.12,0.15]};
+function setView(v){const d=Math.max(1.2,camera.position.distanceTo(controls.target));const dir=new THREE.Vector3(...VIEWS[v]).normalize();flyTo(controls.target.clone().addScaledVector(dir,d),controls.target.clone(),1000);}
+function focusPart(k){const b=body.P[k][8];const c=new THREE.Vector3((b[0]+b[3])/2,(b[1]+b[4])/2,(b[2]+b[5])/2);
+ const s=Math.hypot(b[3]-b[0],b[4]-b[1],b[5]-b[2]);const dir=camera.position.clone().sub(controls.target).normalize();
+ flyTo(c.clone().addScaledVector(dir,Math.min(3.6,Math.max(0.3,s*2.3))),c,1100);}
+
+/* ---------- ficha ---------- */
+let tab='geral';
+let helloOff=false;
+function welcome(){$('info').classList.add('closed');if(helloOff||CK.on)return;
+ $('helloTxt').textContent=(body&&body.key==='f'?'O modelo feminino traz pulmões, fígado segmentado, mamas, útero e ovários; a musculatura cobre os membros inferiores. ':'')+'Use as camadas à esquerda para remover a pele, os músculos e o esqueleto. Clique em qualquer estrutura para abrir a ficha, ou aperte / para buscar.';$('hello').classList.add('show');}
+function neighbours(k){const c=body.center[k],P=body.P,out=[];const nm=P[k][0];
+ for(let j=0;j<P.length;j++){if(j===k||P[j][0]===nm)continue;const d=(body.center[j][0]-c[0])**2+(body.center[j][1]-c[1])**2+(body.center[j][2]-c[2])**2;out.push([d,j]);}
+ out.sort((a,b)=>a[0]-b[0]);const seen=new Set(),res=[];for(const [,j] of out){const key=P[j][0];if(seen.has(key))continue;seen.add(key);res.push(j);if(res.length>=6)break;}return res;}
+function select(k,fly){
+ selected=k;SU.uSel.value=k;if(k<0){welcome();return;}
+ const P=body.P,p=P[k],d=p[7]?INFO[p[7]]:null,side=sideTxt(p[3]);
+ const opp=p[3]?P.findIndex(q=>q[0]===p[0]&&q[3]&&q[3]!==p[3]):-1;
+ let h='<div class="crumb"><i style="background:'+GCOL[p[2]]+'"></i>'+GROUP[p[2]]+'</div><h2>'+p[0]+'</h2>'+(d?'<div class="lat">'+d.latim+'</div>':'');
+ h+='<div class="chips">'+(side?'<span class="chip">'+side+'</span>':'')+(opp>=0?'<button class="chip" data-go="'+opp+'" type="button">Ver lado oposto</button>':'')+'<span class="chip" title="Nome na base de dados">'+p[1]+'</span></div>';
+ h+='<div class="acts"><button type="button" id="aFocus"><i data-lucide="zoom-in"></i>Aproximar</button><button type="button" id="aIso" aria-pressed="'+(isoPart===k)+'"><i data-lucide="crosshair"></i>'+(isoPart===k?'Mostrar tudo':'Isolar')+'</button><button type="button" id="aHide"><i data-lucide="eye-off"></i>Ocultar</button></div>';
+ if(d){if(!['geral','funcao','clinica'].includes(tab))tab='geral';
+  h+='<div class="tabs" role="tablist">'+[['geral','Visão geral'],['funcao','Função'],['clinica','Na clínica']].map(([id,n])=>'<button type="button" role="tab" data-tab="'+id+'" aria-selected="'+(tab===id)+'">'+n+'</button>').join('')+'</div>';
+  h+='<div class="pane">'+(tab==='geral'?'<p>'+d.oque+'</p>':tab==='funcao'?'<p>'+d.funcao+'</p>':'<div class="clin">'+d.clinica+'</div>')+'</div>';}
+ else h+='<div class="pane" style="padding-top:16px"><p>'+GROUP_TXT[p[2]]+'</p><p class="note">A ficha completa desta estrutura, com função e correlação clínica, ainda está em produção.</p></div>';
+ const nb=neighbours(k);
+ h+='<div class="sub">Estruturas vizinhas</div><div class="chips">'+nb.map(j=>'<button class="chip" type="button" data-go="'+j+'"><i style="background:'+GCOL[P[j][2]]+'"></i>'+P[j][0]+'</button>').join('')+'</div>';
+ const ib=$('infoBody');ib.innerHTML=h;icons();$('info').classList.remove('closed');$('hello').classList.remove('show');
+ $('aFocus').onclick=()=>focusPart(k);
+ $('aIso').onclick=()=>toggleIso(k);
+ $('aHide').onclick=()=>hidePart(k);
+ ib.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;select(k);});
+ ib.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{const j=+b.dataset.go;reveal(j);if(isoPart>=0){isoPart=j;SU.uIso.value=j;}select(j,true);});
+ if(fly)focusPart(k);}
+function toggleIso(k){isoPart=isoPart===k?-1:k;SU.uIso.value=isoPart;if(isoPart>=0){setVis(k,1);hidden.delete(k);updHid();focusPart(k);}select(k);}
+function hidePart(k){hidden.add(k);setVis(k,0);updHid();if(isoPart===k){isoPart=-1;SU.uIso.value=-1;}toast('Estrutura oculta. Use o olho na barra inferior para mostrar de novo.');select(-1);}
+function reveal(k){const g=body.P[k][2];if(g<=3&&level>g)setLevel(g);if(g>=5&&!toggles[g]){toggles[g]=true;renderToggles();}if(hidden.has(k)){hidden.delete(k);setVis(k,1);updHid();}}
+$('infoClose').onclick=()=>$('info').classList.add('closed');
+const toastEl=$('toast');let toastT;function toast(s){toastEl.textContent=s;toastEl.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('show'),2600);}
+
+/* ---------- busca ---------- */
+const q=$('q'),res=$('results');let hits=[],kb=-1;
+function doSearch(){if(!body)return;const s=norm(q.value.trim());if(s.length<2){res.innerHTML='';hits=[];return;}
+ const ws=s.split(/\s+/);const seen=new Set();hits=[];const P=body.P;
+ for(const it of body.idx){if(ws.every(w=>it.t.includes(w))){const key=P[it.k][0]+'|'+P[it.k][3];if(seen.has(key))continue;seen.add(key);hits.push(it.k);if(hits.length>=9)break;}}
+ kb=-1;res.innerHTML=hits.length?hits.map(k=>'<button type="button" data-k="'+k+'"><i style="background:'+GCOL[P[k][2]]+'"></i><span>'+P[k][0]+'<small>'+[GROUP[P[k][2]],sideTxt(P[k][3])].filter(Boolean).join(', ')+'</small></span></button>').join(''):'<div class="none">Nada encontrado neste corpo. Tente outro termo, em português ou inglês.</div>';
+ res.classList.add('open');res.querySelectorAll('button').forEach(b=>b.onclick=()=>pickResult(+b.dataset.k));}
+function openPal(){$('palette').classList.add('open');q.value='';res.innerHTML='';hits=[];setTimeout(()=>q.focus(),20);}
+function closePal(){$('palette').classList.remove('open');q.blur();}
+function pickResult(k){closePal();q.value='';isoPart=-1;SU.uIso.value=-1;reveal(k);select(k,true);}
+q.addEventListener('input',doSearch);
+q.addEventListener('keydown',e=>{const bs=res.querySelectorAll('button');if((e.key==='ArrowDown'||e.key==='ArrowUp')&&bs.length){e.preventDefault();kb=(kb+(e.key==='ArrowDown'?1:-1)+bs.length)%bs.length;bs.forEach((b,i)=>b.classList.toggle('kb',i===kb));}
+ else if(e.key==='Enter'&&hits.length)pickResult(hits[Math.max(0,kb)]);else if(e.key==='Escape'){closePal();}});
+$('palette').addEventListener('pointerdown',e=>{if(e.target.id==='palette')closePal();});$('searchBtn').onclick=openPal;
+
+/* ---------- seleção por GPU ---------- */
+const rt=new THREE.WebGLRenderTarget(1,1),px=new Uint8Array(4);
+function gpuPick(x,y){if(!body||switching)return -1;
+ body.meshes.forEach(m=>{if(m)m.userData.pick.visible=m.visible;});
+ camera.setViewOffset(canvas.clientWidth,canvas.clientHeight,Math.round(x),Math.round(y),1,1);
+ renderer.setRenderTarget(rt);renderer.setClearColor(0,0);renderer.clear();renderer.render(body.pick,camera);
+ renderer.readRenderTargetPixels(rt,0,0,1,1,px);renderer.setRenderTarget(null);camera.clearViewOffset();
+ return px[0]+px[1]*256+px[2]*65536-1;}
+const tip=$('tip');let down=null,lastPick=0;
+const rel=e=>{const r=canvas.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+canvas.addEventListener('pointermove',e=>{
+ if(CK.on){caseMove(e);return;}
+ if(e.pointerType==='touch'||tween)return;
+ if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>4){tip.style.display='none';SU.uHov.value=-1;return;}
+ const now=performance.now();if(now-lastPick<70)return;lastPick=now;
+ const [x,y]=rel(e);const k=gpuPick(x,y);
+ if(k<0){tip.style.display='none';SU.uHov.value=-1;canvas.style.cursor='';return;}
+ const p=body.P[k];SU.uHov.value=k;canvas.style.cursor='pointer';
+ tip.innerHTML=p[0]+'<small><i style="background:'+GCOL[p[2]]+'"></i>'+[GROUP[p[2]],sideTxt(p[3])].filter(Boolean).join(', ')+'</small>';tip.style.display='block';
+ tip.style.left=Math.min(e.clientX+16,innerWidth-tip.offsetWidth-10)+'px';tip.style.top=(e.clientY+18)+'px';});
+canvas.addEventListener('pointerleave',()=>{tip.style.display='none';SU.uHov.value=-1;});
+canvas.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];if(CK.on)caseDown(e);});
+canvas.addEventListener('pointerup',e=>{if(!down)return;const mv=Math.hypot(e.clientX-down[0],e.clientY-down[1]);down=null;if(CK.on){caseUp(e,mv);return;}if(mv>6||tween)return;
+ const [x,y]=rel(e);const k=gpuPick(x,y);if(k>=0){if(isoPart>=0&&k!==isoPart)return;select(k,false);}});
+
+/* ---------- ferramentas ---------- */
+$('railTog').onclick=()=>{const m=document.body.classList.toggle('rail-min');$('railTog').innerHTML='<i data-lucide="'+(m?'panel-left-open':'panel-left-close')+'"></i>';$('railTog').setAttribute('aria-label',m?'Expandir painel':'Recolher painel');icons();};
+$('credBtn').onclick=()=>$('about').classList.add('open');$('aboutClose').onclick=()=>$('about').classList.remove('open');$('about').addEventListener('click',e=>{if(e.target.id==='about')$('about').classList.remove('open');});
+$('helloOk').onclick=()=>{helloOff=true;$('hello').classList.remove('show');};
+$('bHome').onclick=goHome;
+$('bSpin').onclick=()=>{controls.autoRotate=!controls.autoRotate;$('bSpin').setAttribute('aria-pressed',controls.autoRotate);};
+controls.addEventListener('start',()=>{if(controls.autoRotate){controls.autoRotate=false;$('bSpin').setAttribute('aria-pressed','false');}});
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+$('bShow').onclick=()=>{if(!hidden.size){toast('Nenhuma estrutura oculta.');return;}const n=hidden.size;resetHidden();toast(n===1?'1 estrutura voltou a aparecer.':n+' estruturas voltaram a aparecer.');};
+$('bHelp').onclick=()=>$('help').classList.add('open');$('helpClose').onclick=()=>$('help').classList.remove('open');
+$('help').addEventListener('click',e=>{if(e.target.id==='help')$('help').classList.remove('open');});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&$('theater').classList.contains('open')){closeTheater();return;}
+ if(e.target===q||CK.on)return;
+ if(e.key==='/'){e.preventDefault();openPal();return;}
+ if(e.key==='Escape'){if($('help').classList.contains('open')){$('help').classList.remove('open');return;}if($('about').classList.contains('open')){$('about').classList.remove('open');return;}if(isoPart>=0){toggleIso(isoPart);}else select(-1);return;}
+ if(e.key==='ArrowDown'){e.preventDefault();setLevel(level+1);}
+ if(e.key==='ArrowUp'){e.preventDefault();setLevel(level-1);}
+ if(selected>=0){const k=e.key.toLowerCase();if(k==='f')focusPart(selected);if(k==='i')toggleIso(selected);if(k==='h')hidePart(selected);}});
+
+/* ---------- troca de corpo ---------- */
+async function switchBody(key){
+ if(switching||(body&&body.key===key))return;switching=true;
+ document.querySelectorAll('[data-body]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.body===key));
+ tip.style.display='none';SU.uHov.value=-1;
+ const old=body;
+ if(old){await new Promise(r=>{const st=performance.now();const f=()=>{const k=Math.min(1,(performance.now()-st)/(REDUCED?50:800));old.BU.value=k;if(k<1)requestAnimationFrame(f);else r();};f();});old.group.visible=false;}
+ let B=BODIES[key];
+ if(!B){toast('Baixando o corpo '+(key==='f'?'feminino':'masculino')+'…');await tick();B=await buildBody(key,(f,msg)=>{toastEl.textContent=msg;toastEl.classList.add('show');});toastEl.classList.remove('show');}
+ isoPart=-1;SU.uIso.value=-1;selected=-1;SU.uSel.value=-1;resetHidden();
+ body=B;B.group.visible=true;B.BU.value=1;
+ $('credit').textContent=CREDIT[key];renderLevels();welcome();q.value='';res.classList.remove('open');
+ await new Promise(r=>{const st=performance.now();const f=()=>{const k=Math.min(1,(performance.now()-st)/(REDUCED?50:1100));B.BU.value=1-k;if(k<1)requestAnimationFrame(f);else r();};f();});
+ switching=false;}
+document.querySelectorAll('[data-body]').forEach(b=>b.onclick=()=>switchBody(b.dataset.body));
+
+/* ---------- casos clínicos ---------- */
+const V3=a=>new THREE.Vector3(a[0],a[1],a[2]);
+const TGT=V3(CASE1.target),NRM=V3(CASE1.normal).normalize(),TAN=V3(CASE1.tangent).normalize(),WND=V3(CASE1.wound);
+const CK={on:false,step:0,pts:{},vit:{},tv:{},stroke:[],drawing:false,orderDone:[],orderErr:0,choice:-1,answered:false,pin:null,ecgX:0,ecgPh:0,ecgY:null,lastDom:0};
+const markers=new THREE.Group();scene.add(markers);
+const STEPS=['intro','diag','cond','mark','inc','feixe','ordem','selo','fim'];
+const MAXP={diag:10,cond:15,mark:20,inc:20,feixe:15,ordem:10,selo:10};
+const LABEL={diag:'Diagnóstico',cond:'Conduta imediata',mark:'Local da drenagem',inc:'Incisão',feixe:'Feixe intercostal',ordem:'Sequência do procedimento',selo:'Selo d’água'};
+const Q={
+ diag:{t:'Qual é o diagnóstico mais provável?',o:['Hemotórax maciço à direita','Tamponamento cardíaco','Pneumotórax hipertensivo à direita','Contusão pulmonar'],ok:2,
+  e:'Murmúrio vesicular abolido, hipertimpanismo, desvio da traqueia para o lado oposto, turgência jugular e choque fecham o diagnóstico clínico de pneumotórax hipertensivo. No hemotórax maciço a percussão é maciça e as jugulares costumam estar colabadas. No tamponamento, o murmúrio vesicular está preservado.'},
+ cond:{t:'Qual é a conduta imediata?',o:['Pedir radiografia de tórax para confirmar','Descompressão torácica imediata, sem esperar exames de imagem','Intubação orotraqueal antes de qualquer outra medida','Pericardiocentese guiada por ultrassom'],ok:1,
+  e:'O diagnóstico é clínico e o paciente pode parar em minutos: descomprime-se primeiro, com agulha ou toracostomia digital, e depois faz-se a drenagem definitiva. Ventilar com pressão positiva antes de descomprimir pode piorar o quadro.',
+  after:'A equipe faz a descompressão com agulha. Sai ar sob pressão e o paciente melhora em parte. Agora vem a drenagem definitiva.',tv:{hr:114,sat:92,sys:96,dia:60,fr:26}},
+ feixe:{t:'Por onde a pinça de Kelly deve entrar na cavidade pleural?',o:['Rente à borda inferior da costela de cima (5ª costela)','Rente à borda superior da costela de baixo (6ª costela)','No meio do espaço intercostal, sem usar a costela como referência'],ok:1,
+  e:'O feixe vasculonervoso intercostal corre no sulco da costela, na borda inferior de cada costela, na ordem veia, artéria e nervo, de cima para baixo. Passar rente à borda superior da costela de baixo evita lesar esses vasos e o nervo. Os vasos destacados mostram esse trajeto.'},
+ selo:{t:'Com o dreno conectado ao selo d’água, o que confirma que ele está funcionando?',o:['A coluna de água fica completamente parada','Sai imediatamente um grande volume de sangue vivo','A coluna de água oscila com a respiração e borbulha enquanto houver ar saindo','A dor no local da incisão melhora'],ok:2,
+  e:'A oscilação mostra que o dreno se comunica com o espaço pleural, e o borbulhamento indica ar saindo. Se o borbulhamento persistir por dias, pense em fístula aérea. Já a saída imediata de 1.500 mL de sangue, ou mais de 200 mL por hora por 2 a 4 horas, indica toracotomia.',
+  tv:{hr:96,sat:97,sys:118,dia:74,fr:20}}};
+const ORDER=['Posicionar o paciente com o braço abduzido, mão atrás da cabeça','Antissepsia e campos estéreis','Anestesia local da pele, do periósteo e da pleura','Incisão transversal de 2 a 3 cm','Dissecção romba com pinça de Kelly sobre a borda superior da costela','Abertura da pleura parietal e exploração digital','Introdução do dreno em direção posterior e superior','Conexão ao selo d’água, fixação e radiografia de controle'];
+const POOL=[4,1,6,0,3,7,2,5];
+const caseEl=$('case'),hintEl=$('caseHint');
+function setHint(h){if(!h){hintEl.style.display='none';return;}hintEl.innerHTML=h;hintEl.style.display='flex';icons();}
+function clearMarkers(){while(markers.children.length){const m=markers.children.pop();m.geometry.dispose();}}
+const mb=c=>new THREE.MeshBasicMaterial({color:c,toneMapped:false});
+function ring(p,n,r,c){const g=new THREE.Group();const t=new THREE.Mesh(new THREE.TorusGeometry(r,r*0.16,10,48),mb(c));t.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),n);const s=new THREE.Mesh(new THREE.SphereGeometry(r*0.28,16,12),mb(c));g.add(t,s);g.position.copy(p).addScaledVector(n,0.0015);return g;}
+function addRing(p,n,r,c){const g=ring(p,n,r,c);g.children.forEach(m=>{m.position.add(g.position);markers.add(m);});return g;}
+function tubeOf(pts,r,c){if(pts.length<2)return null;const m=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),Math.max(8,pts.length*3),r,8,false),mb(c));markers.add(m);return m;}
+function lateralView(){flyTo(TGT.clone().addScaledVector(NRM,0.42).add(new THREE.Vector3(0,0.05,0.14)),TGT.clone(),1200);}
+const rc=new THREE.Raycaster();
+function skinHit(e){const m=BODIES.m.meshes[0];const r=canvas.getBoundingClientRect();
+ rc.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),camera);
+ const hs=rc.intersectObject(m,false),arm=m.geometry.attributes.aArm.array,part=m.geometry.attributes.aPart.array;
+ for(const h of hs){const a=h.face.a;if(arm[a]>0.5)continue;if(part[a]!==CASE1.skinPart)return null;return {p:h.point.clone(),n:h.face.normal.clone().normalize()};}return null;}
+
+async function startCase(){
+ $('cases').classList.remove('open');
+ if(!body||body.key!=='m')await switchBody('m');
+ CK.on=true;document.body.classList.add('case');$('hello').classList.remove('show');
+ isoPart=-1;SU.uIso.value=-1;select(-1);resetHidden();toggles[5]=toggles[6]=toggles[7]=true;renderToggles();setLevel(0);controls.autoRotate=false;
+ SU.uArm.value=0.82;SU.uWound.value.set(WND.x,WND.y,WND.z,0.02);
+ Object.assign(CK,{seen:{},step:0,pts:{},stroke:[],orderDone:[],orderErr:0,choice:-1,answered:false,pin:null,vit:{hr:132,sat:84,sys:82,dia:50,fr:34},tv:{hr:132,sat:84,sys:82,dia:50,fr:34}});
+ clearMarkers();setHint(null);if(DEMOG){scene.remove(DEMOG);DEMOG=null;}demo=null;auInit();AU.bubble=false;
+ const mid=WND.clone().lerp(TGT,0.45);flyTo(mid.clone().add(new THREE.Vector3(-0.36,0.06,0.62)),mid,1800);
+ renderCase();setTimeout(()=>say('Homem, 24 anos, esfaqueado no hemitórax direito. Está agitado, com dispneia intensa. Murmúrio vesicular abolido à direita, hipertimpanismo, desvio da traqueia para a esquerda e turgência jugular.'),900);}
+function exitCase(){auStop();if(DEMOG){scene.remove(DEMOG);DEMOG=null;}demo=null;CK.on=false;document.body.classList.remove('case');SU.uArm.value=0;SU.uWound.value.w=0;SU.uSel.value=-1;clearMarkers();controls.enableRotate=true;setHint(null);setLevel(0);select(-1);goHome();}
+function head(){const i=STEPS.indexOf(STEPS[CK.step]);
+ return '<div class="chead"><div class="crumb"><i style="background:var(--accent)"></i>Caso clínico 1, trauma torácico</div><div class="snd"><button type="button" id="cSnd" aria-label="Som" aria-pressed="'+AU.on+'"><i data-lucide="'+(AU.on?'volume-2':'volume-x')+'"></i></button><input type="range" id="cVol" min="0" max="100" value="'+Math.round(AU.vol*100)+'" aria-label="Volume"><button type="button" id="cNar" aria-label="Narração" aria-pressed="'+AU.narr+'"><i data-lucide="audio-lines"></i></button><button class="cexit" type="button" id="cExit">Sair do caso</button></div></div>'+
+ '<div class="cprog">'+STEPS.slice(0,8).map((s,j)=>'<i class="'+(j<i?'done':j===i?'now':'')+'"></i>').join('')+'</div>'+(i<8?'<div class="cstep">Etapa '+(i+1)+' de 8</div>':'');}
+function next(){CK.step++;CK.choice=-1;CK.answered=false;renderCase();}
+function renderCase(){
+ const s=STEPS[CK.step];let h=head();setHint(null);controls.enableRotate=true;
+ if(s==='intro'){
+  h+='<h3 class="ctitle">Ferimento por arma branca no tórax</h3><p class="ctext">Homem, 24 anos, trazido pelo SAMU 15 minutos após ser esfaqueado no hemitórax direito. Está agitado, com dispneia intensa. O ferimento aparece no modelo.</p>'+
+   '<div class="exam"><b>Exame físico</b><ul><li>Murmúrio vesicular abolido à direita</li><li>Hipertimpanismo à percussão do hemitórax direito</li><li>Desvio da traqueia para a esquerda</li><li>Turgência jugular</li><li>Pele fria e sudoreica</li></ul></div>'+
+   '<p class="note">Os sinais vitais estão no monitor à esquerda.</p><div class="cbtns"><button class="cbtn pri" id="cGo" type="button">Iniciar avaliação</button></div>';
+  caseEl.innerHTML=h;$('cGo').onclick=next;}
+ else if(Q[s]){const q=Q[s];
+  h+='<h3 class="ctitle">'+q.t+'</h3><div class="opts">'+q.o.map((o,j)=>{let c='opt';if(CK.answered){if(j===q.ok)c+=' ok';else if(j===CK.choice)c+=' bad';}else if(j===CK.choice)c+=' sel';
+   return '<button class="'+c+'" type="button" data-o="'+j+'"'+(CK.answered?' disabled':'')+'><i></i><span>'+o+'</span></button>';}).join('')+'</div>';
+  if(CK.answered){const good=CK.choice===q.ok;h+='<div id="cAnim"></div><div class="fb '+(good?'good':'badfb')+'"><strong>'+(good?'Correto.':'Não é essa.')+'</strong>'+q.e+'</div>'+(q.after?'<p class="ctext">'+q.after+'</p>':'')+'<div class="cbtns"><button class="cbtn pri" id="cNext" type="button">Continuar</button></div>';}
+  else h+='<div class="cbtns"><button class="cbtn pri" id="cOk" type="button"'+(CK.choice<0?' disabled':'')+'>Confirmar resposta</button></div>';
+  caseEl.innerHTML=h;icons();if(CK.answered&&$('cAnim')){const key={diag:'pneumo',cond:'agulha',feixe:'feixe',selo:'selo'}[s];$('cAnim').innerHTML='<button class="cbtn rev" type="button"><i data-lucide="clapperboard"></i>Rever animação</button>';icons();$('cAnim').querySelector('button').onclick=()=>openTheater(key);if(!CK.seen[s]){CK.seen[s]=1;openTheater(key);}}
+  caseEl.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{CK.choice=+b.dataset.o;renderCase();});
+  if($('cOk'))$('cOk').onclick=()=>{CK.answered=true;CK.pts[s]=CK.choice===q.ok?MAXP[s]:0;(CK.choice===q.ok?sOk:sBad)();if(s==='selo')AU.bubble=true;if(q.tv)CK.tv=Object.assign({},q.tv);if(s==='feixe')SU.uSel.value=-1;renderCase();};
+  if($('cNext'))$('cNext').onclick=next;
+  if(s==='feixe'&&!CK.answered){if(level!==3){setLevel(3);SU.uSel.value=CASE1.ica[0];flyTo(TGT.clone().addScaledVector(NRM,0.26).add(new THREE.Vector3(0,0.04,0.07)),TGT.clone().addScaledVector(NRM,-0.02),1300);}}
+  if(s==='selo'&&level!==0)setLevel(0);}
+ else if(s==='mark'){
+  if(!CK.answered){h+='<h3 class="ctitle">Marque o local da drenagem</h3><p class="ctext">Clique na pele do paciente no ponto exato onde você faria a drenagem torácica. Você pode clicar de novo para mudar o ponto antes de confirmar.</p><p class="note">O braço direito fica transparente, como se estivesse abduzido para o procedimento.</p>'+
+   '<div class="cbtns"><button class="cbtn" id="cLat" type="button"><i data-lucide="rotate-3d"></i>Ver lateral do tórax</button><button class="cbtn pri" id="cOk" type="button"'+(CK.pin?'':' disabled')+'>Confirmar local</button></div>';
+   setHint('<i data-lucide="mouse-pointer-click"></i>Clique na pele para marcar o ponto');}
+  else{const r=CK.markRes;h+='<h3 class="ctitle">Local da drenagem</h3><div class="meas"><div class="'+(r.d<=1.5?'y':r.d<=3?'m':'n')+'"><small>Distância do alvo</small><b>'+r.d.toFixed(1).replace('.',',')+' cm</b></div><div><small>Vertical</small><b>'+r.dy+'</b></div><div><small>Horizontal</small><b>'+r.dz+'</b></div></div>'+
+   '<div class="fb '+(r.d<=1.5?'good':r.d<=3?'mid':'badfb')+'"><strong>'+(r.d<=1.5?'Ótimo ponto.':r.d<=3?'Perto, mas dá para melhorar.':'Fora da zona segura.')+'</strong>O alvo verde é o 5º espaço intercostal, logo à frente da linha axilar média. O contorno verde é o triângulo de segurança: borda lateral do peitoral maior, borda anterior do latíssimo do dorso e uma linha horizontal na altura do mamilo. Ali há menos músculo e menor risco de atingir fígado ou baço. O 2º espaço na linha hemiclavicular, antes ensinado para a agulha, tem parede mais espessa e falha com mais frequência.</div>'+
+   '<div class="cbtns"><button class="cbtn pri" id="cNext" type="button">Continuar</button></div>';}
+  caseEl.innerHTML=h;icons();
+  if($('cLat'))$('cLat').onclick=lateralView;
+  if($('cOk'))$('cOk').onclick=()=>{const p=CK.pin;const d=p.distanceTo(TGT)*100,dy=(p.y-TGT.y)*100,dz=(p.z-TGT.z)*100;
+   const f=(v,a,b)=>Math.abs(v)<0.5?'no alvo':Math.abs(v).toFixed(1).replace('.',',')+' cm '+(v>0?a:b);
+   CK.markRes={d,dy:f(dy,'acima','abaixo'),dz:f(dz,'à frente','atrás')};(d<=3?sOk:sBad)();CK.pts.mark=d<=1.5?20:d<=3?12:d<=5?5:0;CK.answered=true;
+   addRing(TGT,NRM,0.011,'#2fbf7a');tubeOf(CASE1.tri.map(V3),0.0011,'#2fbf7a');renderCase();};
+  if($('cNext'))$('cNext').onclick=()=>{clearMarkers();next();};}
+ else if(s==='inc'){
+  if(!CK.answered){h+='<h3 class="ctitle">Desenhe a incisão</h3><p class="ctext">Arraste o mouse sobre a pele para traçar a incisão da drenagem, com o tamanho e a direção que você usaria.</p><p class="note">Nesta etapa a rotação fica travada para não atrapalhar o traço. Use a roda do mouse para aproximar.</p>'+
+   '<div class="cbtns"><button class="cbtn" id="cRe" type="button"><i data-lucide="rotate-ccw"></i>Refazer traço</button><button class="cbtn pri" id="cOk" type="button"'+(strokeLen()>0.005?'':' disabled')+'>Confirmar incisão</button></div>';
+   controls.enableRotate=false;setHint('<i data-lucide="pen-line"></i>Arraste sobre a pele para desenhar');}
+  else{const r=CK.incRes;const cls=(v,a,b)=>v?'y':(b?'m':'n');
+   h+='<h3 class="ctitle">Avaliação da incisão</h3><div class="meas"><div class="'+cls(r.lp===6,0,r.lp===3)+'"><small>Comprimento</small><b>'+r.L.toFixed(1).replace('.',',')+' cm</b></div><div class="'+cls(r.ap===8,0,r.ap===4)+'"><small>Ângulo com a costela</small><b>'+Math.round(r.ang)+'°</b></div><div class="'+cls(r.pp===6,0,r.pp===3)+'"><small>Distância do alvo</small><b>'+r.md.toFixed(1).replace('.',',')+' cm</b></div></div>'+
+   '<div class="fb '+(r.tot>=16?'good':r.tot>=9?'mid':'badfb')+'"><strong>'+r.tot+' de 20 pontos.</strong>A incisão ideal, em verde, é transversal, de 2 a 3 cm, paralela às costelas e sobre a costela de baixo do espaço escolhido. Isso permite criar um curto túnel no subcutâneo até a borda superior da costela.</div>'+
+   '<div class="cbtns"><button class="cbtn" id="cDemo" type="button"><i data-lucide="play"></i>Ver demonstração 3D</button><button class="cbtn pri" id="cNext" type="button">Continuar</button></div>';}
+  caseEl.innerHTML=h;icons();
+  if($('cDemo'))$('cDemo').onclick=()=>{const b=$('cDemo');b.disabled=true;runDemo(()=>{if($('cDemo'))$('cDemo').disabled=false;});};
+  if($('cRe'))$('cRe').onclick=()=>{CK.stroke=[];clearMarkers();renderCase();};
+  if($('cOk'))$('cOk').onclick=()=>{const S=CK.stroke[0].p,E=CK.stroke[CK.stroke.length-1].p;const L=S.distanceTo(E)*100;const dir=E.clone().sub(S).normalize();
+   const ang=Math.acos(Math.min(1,Math.abs(dir.dot(TAN))))*180/Math.PI;const md=S.clone().lerp(E,.5).distanceTo(TGT)*100;
+   const lp=(L>=1.5&&L<=4)?6:(L>=1&&L<=5)?3:0,ap=ang<=25?8:ang<=40?4:0,pp=md<=2?6:md<=3.5?3:0;
+   CK.incRes={L,ang,md,lp,ap,pp,tot:lp+ap+pp};(lp+ap+pp>=12?sOk:sBad)();CK.pts.inc=lp+ap+pp;CK.answered=true;controls.enableRotate=true;
+   const a=TGT.clone().addScaledVector(TAN,-0.0125).addScaledVector(NRM,0.003),b=TGT.clone().addScaledVector(TAN,0.0125).addScaledVector(NRM,0.003);tubeOf([a,TGT.clone().addScaledVector(NRM,0.0035),b],0.0011,'#2fbf7a');renderCase();};
+  if($('cNext'))$('cNext').onclick=()=>{clearMarkers();next();};}
+ else if(s==='ordem'){
+  if(level!==0)setLevel(0);
+  const done=CK.orderDone.length===ORDER.length;
+  h+='<h3 class="ctitle">Monte a sequência do procedimento</h3><p class="ctext">Clique nas etapas na ordem em que você as faria.</p>';
+  h+='<div class="seq">'+CK.orderDone.map((i,j)=>'<div><b>'+(j+1)+'</b>'+ORDER[i]+'</div>').join('')+'</div>';
+  if(!done)h+='<div class="pool">'+POOL.filter(i=>!CK.orderDone.includes(i)).map(i=>'<button type="button" data-p="'+i+'">'+ORDER[i]+'</button>').join('')+'</div>';
+  else{CK.pts.ordem=Math.max(0,10-2*CK.orderErr);h+='<div class="fb '+(CK.orderErr===0?'good':CK.orderErr<=2?'mid':'badfb')+'"><strong>'+(CK.orderErr===0?'Sequência perfeita.':CK.orderErr+' '+(CK.orderErr===1?'erro':'erros')+' de ordem.')+'</strong>O dreno vai em direção posterior e superior porque o ar tende a se acumular no ápice. A exploração digital antes da introdução confirma que você está na cavidade pleural e afasta aderências. A radiografia de controle confirma a posição.</div><div class="cbtns"><button class="cbtn pri" id="cNext" type="button">Continuar</button></div>';}
+  caseEl.innerHTML=h;
+  caseEl.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const i=+b.dataset.p;if(i===CK.orderDone.length){tone(880,0.1,'triangle',0.1);CK.orderDone.push(i);renderCase();}else{sBad();CK.orderErr++;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');}});
+  if($('cNext'))$('cNext').onclick=next;}
+ else if(s==='fim'){
+  const tot=Object.keys(MAXP).reduce((a,k)=>a+(CK.pts[k]||0),0);
+  const msg=tot>=85?'Excelente. Você conduziu o caso com segurança.':tot>=65?'Bom resultado. Revise os pontos com a barra mais curta.':'Vale refazer o caso, com atenção às explicações.';
+  h+='<h3 class="ctitle">Resultado</h3><div class="score"><b>'+tot+'</b><span>de 100 pontos</span></div><p class="ctext">'+msg+'</p>'+
+   '<div class="rows">'+Object.keys(MAXP).map(k=>'<div class="rowx"><div><span>'+LABEL[k]+'</span><span>'+(CK.pts[k]||0)+'/'+MAXP[k]+'</span></div><div class="bar2"><i style="width:'+((CK.pts[k]||0)/MAXP[k]*100)+'%"></i></div></div>').join('')+'</div>'+
+   '<p class="note" style="margin-top:14px">Conduta baseada nas recomendações do ATLS, 10ª edição. Conteúdo educacional, sujeito a revisão por um cirurgião.</p>'+
+   '<div class="cbtns"><button class="cbtn" id="cAgain" type="button"><i data-lucide="rotate-ccw"></i>Refazer</button><button class="cbtn pri" id="cBack" type="button">Voltar ao atlas</button></div>';
+  caseEl.innerHTML=h;icons();$('cAgain').onclick=startCase;$('cBack').onclick=exitCase;}
+ const ex=$('cExit');if(ex)ex.onclick=exitCase;caseEl.scrollTop=0;icons();
+ const sb=$('cSnd');if(sb)sb.onclick=()=>{setSound(!AU.on);sb.setAttribute('aria-pressed',AU.on);sb.innerHTML='<i data-lucide="'+(AU.on?'volume-2':'volume-x')+'"></i>';icons();};
+ const cv=$('cVol');if(cv)cv.oninput=e=>setVol(e.target.value/100);
+ caseEl.querySelectorAll('.cbtn,.opt,.pool button').forEach(b=>b.addEventListener('pointerdown',()=>{auInit();sClick();}));
+ const nb=$('cNar');if(nb)nb.onclick=()=>{AU.narr=!AU.narr;nb.setAttribute('aria-pressed',AU.narr);if(!AU.narr)try{speechSynthesis.cancel();}catch(e){}};}
+function strokeLen(){const s=CK.stroke;return s.length>1?s[0].p.distanceTo(s[s.length-1].p):0;}
+let strokeMesh=null;let DEMOG=null;
+function redrawStroke(){if(strokeMesh){markers.remove(strokeMesh);strokeMesh.geometry.dispose();}strokeMesh=tubeOf(CK.stroke.map(q=>q.p.clone().addScaledVector(q.n,0.0012)),0.0016,'#8a0f1f');}
+function caseDown(e){if(STEPS[CK.step]==='inc'&&!CK.answered&&e.button===0){const h=skinHit(e);if(h){CK.drawing=true;CK.stroke=[h];clearMarkers();strokeMesh=null;}}}
+function caseMove(e){if(CK.drawing){const h=skinHit(e);if(h&&h.p.distanceTo(CK.stroke[CK.stroke.length-1].p)>0.0015){CK.stroke.push(h);redrawStroke();}}}
+function caseUp(e,moved){
+ if(CK.drawing){CK.drawing=false;const ok=$('cOk');if(ok)ok.disabled=strokeLen()<=0.005;return;}
+ if(moved>6)return;
+ if(STEPS[CK.step]==='mark'&&!CK.answered){const h=skinHit(e);if(!h){toast('Clique sobre a pele do tórax.');return;}clearMarkers();CK.pin=h.p;addRing(h.p,h.n,0.006,'#f0477a');const ok=$('cOk');if(ok)ok.disabled=false;}}
+/* monitor */
+const ecg=$('ecg'),ex2=ecg.getContext('2d');
+function ecgF(p){const g=(c,w,a)=>a*Math.exp(-Math.pow((p-c)/w,2));return g(.12,.03,.12)+g(.235,.008,-.12)+g(.25,.011,1)+g(.268,.01,-.25)+g(.48,.05,.28);}
+function caseTick(dt,now){
+ const v=CK.vit,t=CK.tv,k=Math.min(1,dt*0.6);for(const x in t)v[x]+=(t[x]-v[x])*k;
+ const W=ecg.width,H=ecg.height,sp=150*dt;CK.ecgPh+=dt*v.hr/60;
+ const beat=Math.floor(CK.ecgPh-0.25);if(beat!==CK.lastBeat){CK.lastBeat=beat;sBeep(v.sat);}auTick(dt,now,v);
+ const nx=CK.ecgX+sp,ph=CK.ecgPh%1,y=H*0.62-ecgF(ph)*H*0.5;
+ ex2.clearRect(CK.ecgX,0,sp+16,H);
+ if(CK.ecgY!==null&&nx<W){ex2.strokeStyle='#5ef2a0';ex2.lineWidth=2.4;ex2.lineJoin='round';ex2.beginPath();ex2.moveTo(CK.ecgX,CK.ecgY);ex2.lineTo(nx,y);ex2.stroke();}
+ CK.ecgX=nx>=W?0:nx;CK.ecgY=nx>=W?null:y;
+ if(now-CK.lastDom>300){CK.lastDom=now;
+  const set=(id,val,u,al)=>{const el=$(id);el.querySelector('b').innerHTML=val+'<sub>'+u+'</sub>';el.classList.toggle('alarm',al);};
+  set('vHR',Math.round(v.hr),'bpm',v.hr>120);set('vSAT',Math.round(v.sat),'%',v.sat<90);set('vPA',Math.round(v.sys)+'/'+Math.round(v.dia),'mmHg',v.sys<90);set('vFR',Math.round(v.fr),'irpm',v.fr>28);}}
+$('caseBtn').onclick=()=>$('cases').classList.add('open');$('casesClose').onclick=()=>$('cases').classList.remove('open');
+$('cases').addEventListener('click',e=>{if(e.target.id==='cases')$('cases').classList.remove('open');});
+$('startCase1').onclick=startCase;
+$('thClose').onclick=closeTheater;$('thOk').onclick=closeTheater;$('theater').addEventListener('click',e=>{if(e.target.id==='theater')closeTheater();});
+
+/* ---------- som ---------- */
+const AU={ctx:null,on:true,narr:false,vol:0.65,master:null,bus:null,lastAlarm:-99999,lastBubble:0,bubble:false,nextBreath:0};
+function auInit(){
+ if(!AU.ctx){try{AU.ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}
+  const c=AU.ctx;AU.master=c.createGain();AU.master.gain.value=AU.on?AU.vol:0;
+  const comp=c.createDynamicsCompressor();comp.threshold.value=-20;comp.knee.value=12;comp.ratio.value=3;comp.attack.value=0.005;comp.release.value=0.2;
+  AU.master.connect(comp).connect(c.destination);
+  const len=Math.floor(c.sampleRate*1.3),ir=c.createBuffer(2,len,c.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.2)*0.5;}
+  const rev=c.createConvolver();rev.buffer=ir;const rg=c.createGain();rg.gain.value=0.18;rev.connect(rg).connect(AU.master);
+  AU.bus=c.createGain();AU.bus.connect(AU.master);AU.bus.connect(rev);
+  const nb=c.createBuffer(1,c.sampleRate*2,c.sampleRate),nd=nb.getChannelData(0);let b=0;for(let i=0;i<nd.length;i++){b=0.97*b+0.03*(Math.random()*2-1);nd[i]=b*6;}AU.noise=nb;}
+ if(AU.ctx.state==='suspended')AU.ctx.resume();}
+function tone(f,dur,type,vol,when,f2,lp){const c=AU.ctx;if(!c||!AU.on)return;const t=c.currentTime+(when||0);
+ const o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur*0.9);
+ g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.1,t+0.006);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+ let n=o;if(lp){const f3=c.createBiquadFilter();f3.type='lowpass';f3.frequency.value=lp;n.connect(f3);n=f3;}n.connect(g).connect(AU.bus);o.start(t);o.stop(t+dur+0.05);}
+function noiseBurst(dur,vol,freq,q,when,f2,shape){const c=AU.ctx;if(!c||!AU.on)return;const t=c.currentTime+(when||0);
+ const s=c.createBufferSource();s.buffer=AU.noise;const f=c.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(freq,t);if(f2)f.frequency.exponentialRampToValueAtTime(f2,t+dur);f.Q.value=q;
+ const g=c.createGain();g.gain.setValueAtTime(0.0001,t);
+ if(shape==='breath'){g.gain.linearRampToValueAtTime(vol,t+dur*0.45);g.gain.linearRampToValueAtTime(0.0001,t+dur);}else{g.gain.exponentialRampToValueAtTime(vol,t+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);}
+ s.connect(f).connect(g).connect(AU.bus);s.start(t,Math.random()*1.5);s.stop(t+dur+0.05);}
+const sBeep=sat=>{const f=520+Math.max(0,Math.min(20,sat-80))*11;tone(f,0.16,'sine',0.085);tone(f*2,0.08,'sine',0.012);};
+const sOk=()=>{tone(784,0.35,'sine',0.09);tone(1175,0.5,'sine',0.08,0.12);};
+const sBad=()=>{tone(311,0.32,'sine',0.09,0,233);tone(156,0.32,'sine',0.05,0,117);};
+const sClick=()=>tone(1800,0.035,'sine',0.018);
+const sAlarm=()=>{[523,659,784].forEach((f,i)=>tone(f,0.2,'triangle',0.05,i*0.24,0,2600));};
+const sBubble=()=>{const f=380+Math.random()*420;noiseBurst(0.09+Math.random()*0.06,0.16,f*2.2,14,0,f);tone(f,0.08,'sine',0.02,0.01,f*1.6);};
+function auTick(dt,now,v){
+ if(!AU.ctx)return;const c=AU.ctx;
+ const distress=Math.min(1,Math.max(0,(v.fr-18)/16));
+ if(distress>0.15&&c.currentTime>=AU.nextBreath){const per=60/Math.max(10,v.fr);noiseBurst(per*0.42,0.05*distress,650,0.8,0.02,1100,'breath');noiseBurst(per*0.4,0.03*distress,450,0.8,per*0.48,380,'breath');AU.nextBreath=c.currentTime+per;}
+ if((v.sat<90||v.sys<90)&&now-AU.lastAlarm>7000){AU.lastAlarm=now;sAlarm();}
+ if(AU.bubble&&now-AU.lastBubble>120+Math.random()*380){AU.lastBubble=now;sBubble();}}
+function auStop(){AU.bubble=false;AU.nextBreath=1e9;try{speechSynthesis.cancel();}catch(e){}}
+let ptVoice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices().filter(v=>/^pt/i.test(v.lang));const br=vs.filter(v=>/BR/i.test(v.lang));
+ const rank=v=>(/natural|neural|online/i.test(v.name)?4:0)+(/google/i.test(v.name)?3:0)+(/luciana|francisca|thalita|maria/i.test(v.name)?2:0)+(/BR/i.test(v.lang)?1:0);
+ ptVoice=(br.length?br:vs).sort((a,b)=>rank(b)-rank(a))[0]||null;}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}catch(e){}
+function say(t){if(!AU.on||!AU.narr||!('speechSynthesis' in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';if(ptVoice)u.voice=ptVoice;u.rate=0.98;u.pitch=1;u.volume=Math.min(1,AU.vol+0.25);speechSynthesis.speak(u);}catch(e){}}
+function setSound(on){AU.on=on;if(AU.master)AU.master.gain.setTargetAtTime(on?AU.vol:0,AU.ctx.currentTime,0.05);if(!on)try{speechSynthesis.cancel();}catch(e){}}
+function setVol(v){AU.vol=v;if(AU.master&&AU.on)AU.master.gain.setTargetAtTime(v,AU.ctx.currentTime,0.05);}
+
+/* ---------- animações ilustradas ---------- */
+const lerp=(a,b,k)=>a+(b-a)*Math.max(0,Math.min(1,k));const sm=k=>{k=Math.max(0,Math.min(1,k));return k*k*(3-2*k);};
+const C_={skin:'#e7b89f',fat:'#f0d39a',mus:'#b0443c',bone:'#efe6d2',boneS:'#c8b996',pl:'#7f99c4',lung:'#e7a5a3',lungS:'#c47876',air:'#dcebf8',heart:'#b8323a'};
+function ribsAxial(){let s='';for(let i=0;i<16;i++){const a=i/16*Math.PI*2;if(Math.abs(Math.sin(a))>0.92&&Math.cos(a)>-0.3&&Math.sin(a)>0)continue;s+='<ellipse cx="'+(180+136*Math.cos(a)).toFixed(1)+'" cy="'+(105+76*Math.sin(a)).toFixed(1)+'" rx="7" ry="4.5" transform="rotate('+(a*180/Math.PI+90).toFixed(0)+' '+(180+136*Math.cos(a)).toFixed(1)+' '+(105+76*Math.sin(a)).toFixed(1)+')" fill="'+C_.bone+'" stroke="'+C_.boneS+'" stroke-width=".8"/>';}return s;}
+const AXIAL=pre=>'<ellipse cx="180" cy="105" rx="152" ry="92" fill="'+C_.skin+'"/><ellipse cx="180" cy="105" rx="146" ry="86" fill="'+C_.fat+'"/><ellipse cx="180" cy="105" rx="141" ry="81" fill="'+C_.mus+'"/>'+ribsAxial()+
+ '<ellipse cx="180" cy="105" rx="129" ry="69" fill="'+C_.air+'" stroke="'+C_.pl+'" stroke-width="1.4"/>'+
+ '<ellipse id="'+pre+'lL" cx="252" cy="100" rx="56" ry="58" fill="'+C_.lung+'" stroke="'+C_.lungS+'"/>'+
+ '<ellipse id="'+pre+'lR" cx="110" cy="100" rx="58" ry="58" fill="'+C_.lung+'" stroke="'+C_.lungS+'"/>'+
+ '<g id="'+pre+'med"><path d="M160 60 Q180 52 200 60 L212 140 Q180 150 150 140 Z" fill="#f2dcd6"/><ellipse cx="190" cy="108" rx="30" ry="25" fill="'+C_.heart+'"/><circle cx="168" cy="146" r="7" fill="#c0282d"/><circle cx="180" cy="66" r="6" fill="#fff" stroke="#c7b8a8" stroke-width="2"/></g>'+
+ '<ellipse cx="180" cy="168" rx="17" ry="12" fill="'+C_.bone+'" stroke="'+C_.boneS+'"/>'+
+ '<text x="180" y="16" text-anchor="middle" font-size="9" fill="var(--muted)">anterior</text><text x="14" y="108" font-size="9" fill="var(--muted)">D</text><text x="342" y="108" font-size="9" fill="var(--muted)">E</text>';
+const SCENES={
+ pneumo:{dur:13,svg:AXIAL('a')+'<path d="M62 44 l10 8" stroke="#3a0a10" stroke-width="3.5" stroke-linecap="round"/><g id="aP"></g>'+
+  '<g id="aLab" opacity="0"><text x="70" y="168" font-size="10" fill="var(--ink)">Ar sob pressão</text><path d="M232 196 h46" stroke="var(--accent)" stroke-width="2" marker-end="url(#ah)"/><text x="196" y="207" font-size="10" fill="var(--ink)">desvio do mediastino</text></g>'+
+  '<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>',
+  caps:[[0,'Pelo ferimento, o ar entra no espaço pleural a cada inspiração e não consegue sair. É um mecanismo de válvula.'],[4.5,'A pressão sobe, o pulmão direito colapsa e o mediastino é empurrado para o lado oposto.'],[9,'As veias cavas são comprimidas, o retorno venoso cai e o paciente entra em choque.']],
+  up(r,t){const k=sm((t-1)/7);const l=r.querySelector('#alR');l.setAttribute('rx',lerp(58,24,k));l.setAttribute('ry',lerp(58,30,k));l.setAttribute('cx',lerp(110,140,k));
+   r.querySelector('#amed').setAttribute('transform','translate('+lerp(0,24,sm((t-3)/6))+' 0)');r.querySelector('#alL').setAttribute('rx',lerp(56,46,sm((t-3)/6)));r.querySelector('#alL').setAttribute('cx',lerp(252,262,sm((t-3)/6)));
+   r.querySelector('#aLab').setAttribute('opacity',sm((t-5)/1.5));
+   let s='';for(let i=0;i<6;i++){const p=((t*0.55+i/6)%1);if(t>8.5)break;s+='<circle cx="'+lerp(68,100,p)+'" cy="'+lerp(50,92,p)+'" r="'+(2.2-p)+'" fill="#7fb2e0" opacity="'+(1-p)+'"/>';}r.querySelector('#aP').innerHTML=s;}},
+ agulha:{dur:12,svg:AXIAL('b')+'<g id="bN"><rect x="-60" y="102" width="64" height="2.6" fill="#9aa3b4"/><rect x="-80" y="99" width="22" height="9" rx="2" fill="#5d7fbf"/></g><g id="bP"></g>',
+  caps:[[0,'A agulha entra no quinto espaço intercostal, logo à frente da linha axilar média.'],[4,'O ar sob pressão escapa, e o mediastino volta para o lugar.'],[8,'É uma medida temporária. O pulmão só reexpande de vez com o dreno de tórax.']],
+  up(r,t){const n=sm(t/2.5);r.querySelector('#bN').setAttribute('transform','translate('+lerp(0,72,n)+' 0)');
+   const k=sm((t-3)/6);const l=r.querySelector('#blR');l.setAttribute('rx',lerp(24,46,k));l.setAttribute('ry',lerp(30,50,k));l.setAttribute('cx',lerp(140,118,k));
+   r.querySelector('#bmed').setAttribute('transform','translate('+lerp(24,4,k)+' 0)');r.querySelector('#blL').setAttribute('rx',lerp(46,55,k));r.querySelector('#blL').setAttribute('cx',lerp(262,253,k));
+   let s='';if(t>2.6&&t<9)for(let i=0;i<7;i++){const p=((t*0.9+i/7)%1);s+='<circle cx="'+lerp(76,-10,p)+'" cy="'+(103+Math.sin(p*9+i)*3)+'" r="'+(2.4-p*1.2)+'" fill="#7fb2e0" opacity="'+(1-p)+'"/>';}r.querySelector('#bP').innerHTML=s;}},
+ feixe:{dur:14,svg:'<rect width="360" height="210" fill="'+C_.air+'"/><rect x="0" y="0" width="34" height="210" fill="'+C_.skin+'"/><rect x="34" y="0" width="40" height="210" fill="'+C_.fat+'"/><rect x="74" y="0" width="128" height="210" fill="'+C_.mus+'"/>'+
+  Array.from({length:14},(_,i)=>'<path d="M'+(80+i*9)+' 70 l8 64" stroke="rgba(255,255,255,.16)" stroke-width="2"/>').join('')+
+  '<ellipse cx="150" cy="40" rx="26" ry="30" fill="'+C_.bone+'" stroke="'+C_.boneS+'" stroke-width="1.5"/><ellipse cx="150" cy="172" rx="26" ry="30" fill="'+C_.bone+'" stroke="'+C_.boneS+'" stroke-width="1.5"/>'+
+  '<text x="150" y="44" text-anchor="middle" font-size="10" fill="#7a6a4c">5ª costela</text><text x="150" y="176" text-anchor="middle" font-size="10" fill="#7a6a4c">6ª costela</text>'+
+  '<circle cx="168" cy="76" r="5.5" fill="#2f4f9a"/><circle cx="168" cy="89" r="5" fill="#c0282d"/><circle cx="168" cy="101" r="4.5" fill="#e2bf55"/>'+
+  '<path id="cPl" d="M206 0 L206 210" stroke="'+C_.pl+'" stroke-width="2.5" fill="none"/><rect x="214" y="0" width="146" height="210" fill="'+C_.lung+'" opacity=".55"/>'+
+  '<g font-size="10" fill="var(--ink)"><text x="230" y="70"><tspan fill="#2f4f9a">●</tspan> Veia</text><text x="230" y="85"><tspan fill="#c0282d">●</tspan> Artéria</text><text x="230" y="100"><tspan fill="#c9a12e">●</tspan> Nervo</text><text x="230" y="196" fill="var(--muted)">pleura e pulmão</text><text x="6" y="200" fill="var(--muted)">pele</text></g>'+
+  '<g id="cBad" opacity="0"><path d="M10 92 H160" stroke="#d0475f" stroke-width="2.5" stroke-dasharray="6 5"/><text x="60" y="84" font-size="11" fill="#d0475f" font-weight="600">✕ risco de lesar o feixe</text></g>'+
+  '<g id="cK"><path d="M-150 132 H0 M-150 138 H0" stroke="#8d96a8" stroke-width="3" stroke-linecap="round"/><path d="M0 132 q8 1 12 3 M0 138 q8-1 12-3" stroke="#8d96a8" stroke-width="3" fill="none" stroke-linecap="round"/></g>',
+  caps:[[0,'O feixe de veia, artéria e nervo corre no sulco da borda inferior de cada costela, nessa ordem, de cima para baixo.'],[4.5,'Por isso a pinça passa rente à borda superior da costela de baixo.'],[9,'Ela perfura a pleura parietal com controle, e o trajeto é conferido com o dedo antes de introduzir o dreno.']],
+  up(r,t){r.querySelector('#cBad').setAttribute('opacity',t<4.5?sm((t-1)/1)*(1-sm((t-3.8)/0.7)):0);
+   const x=t<5?-20:lerp(-20,212,sm((t-5)/4));r.querySelector('#cK').setAttribute('transform','translate('+x+' 0)');
+   const b=t<8?0:t<9.2?sm((t-8)/1.2)*10:0;r.querySelector('#cPl').setAttribute('d',t>=9.2?'M206 0 L206 124 M206 146 L206 210':'M206 0 L206 112 Q'+(206+b)+' 135 206 158 L206 210');}},
+ selo:{dur:14,svg:'<path d="M30 20 Q8 105 30 190 L150 190 L150 20 Z" fill="'+C_.mus+'"/><path d="M40 28 Q22 105 40 182 L142 182 L142 28 Z" fill="'+C_.air+'" stroke="'+C_.pl+'" stroke-width="1.5"/>'+
+  '<path id="dLung" d="" fill="'+C_.lung+'" stroke="'+C_.lungS+'"/>'+
+  '<path id="dTube" d="M-10 160 L38 150 Q70 140 90 100 Q105 70 110 45" stroke="#cfe3ee" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="240" stroke-dashoffset="240"/>'+
+  '<path id="dOut" d="M38 150 Q20 196 120 200 Q240 204 262 150 L262 74" stroke="#cfe3ee" stroke-width="5" fill="none" opacity="0"/>'+
+  '<g id="dBot" opacity="0"><rect x="230" y="70" width="70" height="128" rx="12" fill="none" stroke="var(--ink2)" stroke-width="2"/><rect x="232" y="140" width="66" height="56" rx="10" fill="#9cc9e6" opacity=".7"/><path d="M262 74 V160" stroke="#cfe3ee" stroke-width="5"/>'+
+  '<rect id="dCol" x="260" y="150" width="4" height="10" fill="#4a90c8"/><g id="dB"></g><text x="265" y="60" text-anchor="middle" font-size="10" fill="var(--ink)">selo d’água</text></g>'+
+  '<text x="96" y="14" text-anchor="middle" font-size="10" fill="var(--muted)">ápice</text>',
+  caps:[[0,'O dreno é direcionado para trás e para cima, onde o ar se acumula no paciente deitado.'],[4.5,'No selo d’água, a ponta do tubo fica submersa: o ar sai, mas não consegue voltar.'],[9,'A coluna oscila com a respiração e borbulha enquanto houver ar saindo. O pulmão reexpande.']],
+  up(r,t){r.querySelector('#dTube').setAttribute('stroke-dashoffset',lerp(240,0,sm(t/3.5)));const o=sm((t-3.5)/1.2);r.querySelector('#dOut').setAttribute('opacity',o);r.querySelector('#dBot').setAttribute('opacity',o);
+   const k=sm((t-6)/6),w=lerp(30,92,k),h=lerp(60,150,k);r.querySelector('#dLung').setAttribute('d','M'+(142)+' '+(105-h/2)+' Q'+(142-w)+' '+(105-h/2)+' '+(142-w)+' 105 Q'+(142-w)+' '+(105+h/2)+' 142 '+(105+h/2)+' Z');
+   const osc=Math.sin(t*2.2)*7;r.querySelector('#dCol').setAttribute('y',150+osc);r.querySelector('#dCol').setAttribute('height',10-osc*0.4);
+   let s='';if(t>5&&t<12.5)for(let i=0;i<6;i++){const p=((t*0.8+i/6)%1);s+='<circle cx="'+(262+Math.sin(p*12+i*2)*4)+'" cy="'+lerp(160,142,p)+'" r="'+(1.6+p*1.6)+'" fill="#fff" opacity="'+(0.9-p*0.6)+'"/>';}r.querySelector('#dB').innerHTML=s;}}};
+let ANIM=null;
+const TH_T={pneumo:'Como se forma o pneumotórax hipertensivo',agulha:'Descompressão com agulha',feixe:'O feixe intercostal e a passagem da pinça',selo:'Dreno de tórax e selo d’água'};
+function openTheater(key){$('thTitle').textContent=TH_T[key];$('theater').classList.add('open');mountAnim($('thBody'),key);}
+function closeTheater(){$('theater').classList.remove('open');if(ANIM)cancelAnimationFrame(ANIM.raf);ANIM=null;try{speechSynthesis.cancel();}catch(e){}}
+function mountAnim(el,key){
+ if(ANIM)cancelAnimationFrame(ANIM.raf);const S=SCENES[key];
+ el.innerHTML='<div class="anim"><svg viewBox="0 0 360 210" role="img" aria-label="Ilustração animada">'+S.svg+'</svg><p class="acap"></p><div class="actl"><button type="button" class="aplay" aria-label="Pausar"><i data-lucide="pause"></i></button><div class="atl"><i></i></div><button type="button" class="arep" aria-label="Repetir"><i data-lucide="rotate-ccw"></i></button></div></div>';icons();
+ const svg=el.querySelector('svg'),cap=el.querySelector('.acap'),bar=el.querySelector('.atl i'),pb=el.querySelector('.aplay');
+ const A={t:0,play:true,last:performance.now(),ci:-1,raf:0};ANIM=A;
+ const setPlay=p=>{A.play=p;pb.innerHTML='<i data-lucide="'+(p?'pause':'play')+'"></i>';pb.setAttribute('aria-label',p?'Pausar':'Continuar');icons();if(!p)try{speechSynthesis.cancel();}catch(e){}};
+ pb.onclick=()=>{if(A.t>=S.dur){A.t=0;A.ci=-1;}setPlay(!A.play);};el.querySelector('.arep').onclick=()=>{A.t=0;A.ci=-1;setPlay(true);};
+ const f=now=>{if(!svg.isConnected)return;const dt=Math.min(.05,(now-A.last)/1000);A.last=now;if(A.play){A.t=Math.min(S.dur,A.t+(REDUCED?S.dur:dt));if(A.t>=S.dur)setPlay(false);}
+  S.up(svg,A.t);bar.style.width=(A.t/S.dur*100)+'%';let ci=0;S.caps.forEach((c,i)=>{if(A.t>=c[0])ci=i;});if(ci!==A.ci){A.ci=ci;cap.textContent=S.caps[ci][1];if(A.play)say(S.caps[ci][1]);}
+  A.raf=requestAnimationFrame(f);};A.raf=requestAnimationFrame(f);}
+
+/* ---------- demonstração 3D ---------- */
+let demo=null;
+function instruments(){
+ const metal=new THREE.MeshStandardMaterial({color:0xc9ced6,metalness:.9,roughness:.25});
+ const g={};
+ const sc=new THREE.Group();const hd=new THREE.Mesh(new THREE.BoxGeometry(0.009,0.085,0.0035),metal);hd.position.y=0.065;
+ const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(0.004,0.022);sh.lineTo(-0.003,0.022);sh.quadraticCurveTo(-0.003,0.006,0,0);
+ const bl=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:0.0004,bevelEnabled:false}),metal);bl.position.z=-0.0002;sc.add(hd,bl);g.scalpel=sc;
+ const kl=new THREE.Group();[-1,1].forEach(s=>{const a=new THREE.Mesh(new THREE.CylinderGeometry(0.0012,0.0016,0.11,8),metal);a.position.set(s*0.0025,0.055,0);a.rotation.z=s*0.03;a.userData.s=s;kl.add(a);
+  const ri=new THREE.Mesh(new THREE.TorusGeometry(0.008,0.0013,8,24),metal);ri.position.set(s*0.012,0.115,0);kl.add(ri);});g.kelly=kl;
+ const dr=new THREE.Group();const tb=new THREE.Mesh(new THREE.CylinderGeometry(0.0047,0.0047,0.26,20,1,true),new THREE.MeshPhysicalMaterial({color:0xeaf4f8,roughness:.15,transmission:0,transparent:true,opacity:.78,clearcoat:1,side:THREE.DoubleSide}));
+ tb.position.y=0.13;const st=new THREE.Mesh(new THREE.CylinderGeometry(0.0009,0.0009,0.26,6),new THREE.MeshBasicMaterial({color:0x1d3d7a}));st.position.set(0.0042,0.13,0);dr.add(tb,st);g.drain=dr;
+ return g;}
+function orient(obj,tip,axisDir,up){const m=new THREE.Matrix4(),y=axisDir.clone().normalize(),x=new THREE.Vector3().crossVectors(up,y).normalize(),z=new THREE.Vector3().crossVectors(x,y);m.makeBasis(x,y,z);obj.quaternion.setFromRotationMatrix(m);obj.position.copy(tip);}
+const DEMO_CAPS=[[0,'Incisão transversal de dois a três centímetros, sobre a sexta costela.'],[3.2,'Dissecção romba com a pinça de Kelly, rente à borda superior da costela, até perfurar a pleura.'],[7.4,'O dreno entra pelo trajeto, em direção posterior e superior.']];
+function runDemo(onEnd){
+ if(demo)return;const I=instruments();const g=new THREE.Group();scene.add(g);DEMOG=g;g.add(I.scalpel,I.kelly,I.drain);
+ const A=TGT.clone().addScaledVector(TAN,-0.0125).addScaledVector(NRM,-0.002),B=TGT.clone().addScaledVector(TAN,0.0125).addScaledVector(NRM,-0.002);
+ const out=NRM.clone(),entry=TGT.clone().addScaledVector(NRM,-0.001);
+ const dDir=NRM.clone().multiplyScalar(-0.75).add(new THREE.Vector3(0,0.5,-0.42)).normalize();
+ flyTo(TGT.clone().addScaledVector(NRM,0.24).add(new THREE.Vector3(0,0.05,0.11)),TGT.clone(),900);
+ const cut={mesh:null};const st=performance.now();let ci=-1;
+ demo={tick(now){const t=(now-st)/1000;
+  let c=0;DEMO_CAPS.forEach((x,i)=>{if(t>=x[0])c=i;});if(c!==ci){ci=c;setHint('<i data-lucide="play"></i>'+DEMO_CAPS[c][1]);say(DEMO_CAPS[c][1]);}
+  const k1=sm((t-0.6)/2.2);I.scalpel.visible=t<3.2;if(I.scalpel.visible){const tip=A.clone().lerp(B,k1).addScaledVector(out,t<0.6?lerp(0.05,0,sm(t/0.6)):0);orient(I.scalpel,tip,out.clone().addScaledVector(TAN,-0.35),TAN);}
+  if(t>0.6&&t<3.3){if(cut.mesh){markers.remove(cut.mesh);cut.mesh.geometry.dispose();}const P=[A.clone().addScaledVector(NRM,0.0028),A.clone().lerp(B,Math.max(0.02,k1)).addScaledVector(NRM,0.0028)];cut.mesh=tubeOf(P,0.0014,'#7a0d18');}
+  I.kelly.visible=t>3.2&&t<7.6;if(I.kelly.visible){const k2=sm((t-3.4)/1.6),k3=sm((t-5.2)/1.6);const tip=entry.clone().addScaledVector(out,lerp(0.08,0,k2)).addScaledVector(out,-0.018*k3);
+   orient(I.kelly,tip,out.clone().add(new THREE.Vector3(0,0.15,0.1)),TAN);const sp=t>5.6&&t<7?Math.sin((t-5.6)*Math.PI*1.4)*0.12:0;I.kelly.children.forEach(ch=>{if(ch.userData.s)ch.rotation.z=ch.userData.s*(0.03+Math.max(0,sp));});}
+  I.drain.visible=t>7.4;if(I.drain.visible){const k4=sm((t-7.6)/3.2);const tip=entry.clone().addScaledVector(dDir,lerp(-0.12,0.1,k4));orient(I.drain,tip,dDir.clone().negate(),TAN);}
+  if(t>11.4){demo=null;setHint(null);onEnd&&onEnd();}}};}
+
+/* ---------- início ---------- */
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
+let last=performance.now();
+function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(tween)tween(now);controls.update();SU.uTime.value=now/1000;
+ if(body){for(let g=0;g<8;g++){const m=body.meshes[g];if(!m)continue;const t=groupTarget(g),u=body.GU[g];
+  if(REDUCED)u.value=t;else if(u.value<t)u.value=Math.min(t,u.value+dt/1.15);else if(u.value>t)u.value=Math.max(t,u.value-dt/1.15);
+  m.visible=u.value<0.999||(isoPart>=0&&body.P[isoPart][2]===g);}}
+ if(CK.on)caseTick(dt,now);
+ if(demo)demo.tick(now);
+ renderer.render(scene,camera);}
+const B0=await buildBody('m',(f,msg)=>{bootBar.style.width=(f*100)+'%';bootMsg.textContent=msg;});
+body=B0;$('credit').textContent=CREDIT.m;welcome();renderLevels();
+if(MOBILE)$('info').classList.add('closed');
+camera.position.set(1.4,1.6,9);controls.target.copy(HOME_T);
+requestAnimationFrame(loop);
+bootBar.style.width='100%';
+flyTo(new THREE.Vector3(0.3,1.0,homeDist()),HOME_T,2400);
+setTimeout(()=>$('boot').classList.add('done'),120);
+})().catch(e=>{document.getElementById('bootMsg').textContent='Não foi possível montar o modelo: '+e.message;console.error(e);});
+</script>
+</body>
+</html>
